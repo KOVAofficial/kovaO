@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOVA — L'achat-revente minimaliste, interactif & accessible</title>
+    <style>
+        :root {
+            --bg-main: #FFFFFF;
+            --bg-alt: #F5F5F7;
+            --text-main: #111111;
+            --text-muted: #55555A;
+            --navy: #0F1E36;
+            --navy-hover: #1D355E;
+            --border: #DCDCE0;
+            --radius: 10px;
+            --focus-ring: #0F1E36;
+            --font-scale: 1;
+            --success: #166534;
+            --success-bg: #DCFCE7;
+        }
+
+        [data-contrast="high"] {
+            --bg-main: #FFFFFF;
+            --bg-alt: #EBEBEF;
+            --text-main: #000000;
+            --text-muted: #111111;
+            --navy: #000000;
+            --navy-hover: #222222;
+            --border: #000000;
+            --focus-ring: #005FCC;
+        }
+
+        [data-motion="reduced"], [data-motion="reduced"] *, [data-motion="reduced"] *::before, [data-motion="reduced"] *::after {
+            animation-duration: 0.001ms !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: calc(16px * var(--font-scale));
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--focus-ring);
+            outline-offset: 2px;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 16px;
+            background: var(--navy);
+            color: #FFFFFF;
+            padding: 12px 18px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            z-index: 1000;
+            text-decoration: none;
+        }
+        .skip-link:focus {
+            top: 16px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Barre d'accessibilité universelle */
+        .a11y-bar {
+            position: relative;
+            z-index: 200;
+            background-color: var(--bg-alt);
+            border-bottom: 1px solid var(--border);
+            padding: 4px 0;
+            font-size: 0.78rem;
+        }
+        .a11y-inner {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .a11y-hint {
+            color: var(--text-muted);
+        }
+        .a11y-settings summary {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 36px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+        }
+        .a11y-settings summary::-webkit-details-marker {
+            display: none;
+        }
+        .a11y-settings summary:hover, .a11y-settings[open] summary {
+            background: var(--bg-main);
+        }
+        .settings-chevron {
+            transition: transform 0.2s ease;
+        }
+        .a11y-settings[open] .settings-chevron {
+            transform: rotate(180deg);
+        }
+        .a11y-controls {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 20px;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            width: 350px;
+            max-width: calc(100vw - 40px);
+            padding: 12px;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 28px rgba(15, 30, 54, 0.08);
+        }
+        .a11y-btn {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 44px;
+            flex: 1 1 140px;
+        }
+        .a11y-btn:hover, .a11y-btn[aria-pressed="true"] {
+            background: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+        }
+
+        /* Navigation principale */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        header.is-scrolled {
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 20px rgba(15, 30, 54, 0.06);
+        }
+
+        [data-contrast="high"] header {
+            background-color: var(--bg-main);
+            backdrop-filter: none;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 74px;
+            gap: 16px;
+            padding: 10px 0;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 8px 4px;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .streak-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            min-height: 38px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .streak-pill:hover {
+            color: var(--navy);
+            border-color: var(--navy);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            min-height: 44px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: var(--radius);
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-navy {
+            background-color: var(--navy);
+            color: #FFFFFF;
+        }
+
+        .btn-navy:hover {
+            background-color: var(--navy-hover);
+        }
+
+        .btn-outline {
+            background-color: #FFFFFF;
+            color: var(--text-main);
+            border-color: var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-main);
+        }
+
+        .btn-sm {
+            padding: 8px 14px;
+            min-height: 38px;
+            font-size: 0.875rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 64px 0 72px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+            gap: 48px;
+            align-items: center;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--navy);
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 99px;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            font-size: 3.1rem;
+            font-weight: 800;
+            letter-spacing: -0.035em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 520px;
+            margin-bottom: 32px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Carte interactive de progression utilisateur */
+        .engagement-card {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            scroll-margin-top: 110px;
+        }
+
+        #progress-title {
+            font-size: 1rem;
+        }
+
+        .hero #progressSubtitle {
+            font-size: 0.82rem;
+            margin-bottom: 0;
+        }
+
+        .engagement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .level-badge {
+            background: var(--navy);
+            color: #FFFFFF;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 99px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--navy);
+            width: 100%;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .mission-details summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-height: 44px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .mission-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .mission-details summary::after {
+            content: '+';
+            font-size: 1.1rem;
+        }
+
+        .mission-details[open] summary::after {
+            content: '−';
+        }
+
+        .mission-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .mission-item {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.78rem;
+        }
+
+        .mission-item strong {
+            white-space: nowrap;
+        }
+
+        .mission-item.done {
+            background: var(--success-bg);
+            border-color: var(--success);
+        }
+
+        /* Barre de recherche, tri & filtres */
+        .catalog {
+            padding: 64px 0 96px;
+            border-top: 1px solid var(--border);
+        }
+
+        .toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .toolbar-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .search-sort-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .search-input-wrap {
+            flex: 1;
+            min-width: 240px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            min-height: 46px;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            background: #FFFFFF;
+            color: var(--text-main);
+        }
+
+        .sort-select {
+            min-height: 46px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            background: #FFFFFF;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            min-height: 40px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: #FFFFFF;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .filter-btn[aria-pressed="true"] {
+            background-color: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+        }
+
+        /* État invité / Vide */
+        .state-box {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 48px 24px;
+            text-align: center;
+            max-width: 680px;
+            margin: 24px auto;
+        }
+
+        .state-box h3 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+
+        .state-box p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        /* Grille produits */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #FFFFFF;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--navy);
+        }
+
+        .product-media {
+            background: var(--bg-alt);
+            aspect-ratio: 4 / 3;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .product-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .badge-top-left {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--navy);
+            color: #FFFFFF;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.15rem;
+            color: var(--text-main);
+        }
+
+        .fav-btn[aria-pressed="true"] {
+            background: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+        }
+
+        .product-body {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .product-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .product-seller {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .product-footer {
+            margin-top: auto;
+            padding-top: 14px;
+            border-top: 1px solid var(--bg-alt);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        /* Modales & Drawers accessibles */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 17, 17, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            padding: 16px;
+        }
+
+        .overlay.open {
+            display: flex;
+        }
+
+        .dialog-box {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px;
+        }
+
+        .dialog-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .close-btn {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-field {
+            margin-bottom: 16px;
+        }
+
+        .form-field label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .form-field input, .form-field select, .form-field textarea {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            background: #FFFFFF;
+            color: var(--text-main);
+        }
+
+        .interest-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .interest-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .interest-check input {
+            width: 18px;
+            height: 18px;
+            min-height: auto;
+        }
+
+        /* Messagerie & Offres */
+        .chat-history {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            min-height: 180px;
+            max-height: 260px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .msg-bubble {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .msg-bubble.mine {
+            background: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+            align-self: flex-end;
+            max-width: 85%;
+        }
+
+        .msg-offer-tag {
+            display: inline-block;
+            background: var(--bg-alt);
+            color: var(--navy);
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        /* Toast de notification accessible */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--navy);
+            color: #FFFFFF;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 500;
+            display: none;
+        }
+        .toast.show {
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-alt);
+            border-top: 1px solid var(--border);
+            padding: 48px 0 32px;
+        }
+
+        .footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* Apparitions courtes, déclenchées une seule fois à l'entrée dans la page. */
+        [data-reveal].reveal-pending {
+            opacity: 0;
+        }
+
+        [data-reveal].is-revealing {
+            animation: reveal-content 0.56s cubic-bezier(0.2, 0.65, 0.3, 1) both;
+            animation-delay: var(--reveal-delay, 0ms);
+        }
+
+        @keyframes reveal-content {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+                filter: blur(3px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        [data-motion="reduced"] [data-reveal] {
+            opacity: 1 !important;
+            animation: none !important;
+            transform: none !important;
+            filter: none !important;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html, *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.001ms !important;
+                transition-duration: 0.001ms !important;
+            }
+            [data-reveal] {
+                opacity: 1 !important;
+                animation: none !important;
+                transform: none !important;
+                filter: none !important;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .engagement-card {
+                width: 100%;
+                max-width: 480px;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .a11y-hint {
+                display: none;
+            }
+            .a11y-inner {
+                justify-content: flex-end;
+            }
+            .nav-inner {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .nav-actions {
+                margin-left: auto;
+                justify-content: flex-end;
+            }
+            .nav-actions .btn-sm {
+                padding: 6px 9px;
+                font-size: 0.78rem;
+            }
+            .streak-pill, .nav-actions .btn-sm {
+                min-height: 44px;
+            }
+            .logo {
+                font-size: 1.2rem;
+                gap: 5px;
+            }
+            .logo svg {
+                width: 26px;
+            }
+            .hero {
+                padding: 40px 0 44px;
+            }
+            .hero-grid {
+                gap: 28px;
+            }
+            .engagement-card {
+                padding: 14px 16px;
+            }
+            .search-input-wrap {
+                min-width: 0;
+                flex-basis: 100%;
+            }
+            .search-sort-row > div, .sort-select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="#main-content" class="skip-link">Aller directement au contenu principal</a>
+
+    <!-- Barre d'accessibilité universelle (WCAG AAA) -->
+    <div class="a11y-bar" role="region" aria-label="Outils d'accessibilité">
+        <div class="container a11y-inner">
+            <span class="a11y-hint">Un affichage à votre mesure.</span>
+            <details class="a11y-settings" id="displaySettings">
+                <summary>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="var(--bg-alt)"/><circle cx="15" cy="17" r="3" fill="var(--bg-alt)"/></svg>
+                    Personnaliser
+                    <svg class="settings-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
+                </summary>
+                <div class="a11y-controls" role="group" aria-label="Réglages d’affichage">
+                    <button type="button" class="a11y-btn" id="btnTextNormal" aria-pressed="true" onclick="setFontScale(1)">Texte Normal</button>
+                    <button type="button" class="a11y-btn" id="btnTextLarge" aria-pressed="false" onclick="setFontScale(1.15)">Texte Grand (A+)</button>
+                    <button type="button" class="a11y-btn" id="btnContrast" aria-pressed="false" onclick="toggleContrast()">Contraste Élevé</button>
+                    <button type="button" class="a11y-btn" id="btnMotion" aria-pressed="false" onclick="toggleMotion()">Réduire animations</button>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <header>
+        <div class="container nav-inner">
+            <a href="#" class="logo" aria-label="KOVA Accueil">
+                <svg width="32" height="22" viewBox="0 0 64 44" fill="none" aria-hidden="true">
+                    <circle cx="22" cy="22" r="18" stroke="currentColor" stroke-width="4.5"/>
+                    <circle cx="42" cy="22" r="18" stroke="currentColor" stroke-width="4.5"/>
+                    <path d="M22 8V36M22 22L38 8M22 22L40 36" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>KOVA.</span>
+            </a>
+
+            <nav aria-label="Navigation principale">
+                <ul class="nav-links">
+                    <li><a href="#catalogue">Annonces réelles</a></li>
+                    <li><a href="#missions">Vos récompenses</a></li>
+                    <li><a href="#footer">Base de données</a></li>
+                </ul>
+            </nav>
+
+            <div class="nav-actions">
+                <a class="streak-pill" href="#missions" onclick="document.getElementById('missionDetails').open = true" aria-label="Voir mes points et mon niveau" id="pointsLink">
+                    <span aria-hidden="true">★</span>
+                    <span id="navPoints">0 pts</span>
+                </a>
+                <button type="button" class="btn btn-outline btn-sm" id="btnAuth" onclick="openModal('modalAuth')">Connexion</button>
+                <button type="button" class="btn btn-navy btn-sm" onclick="handleSellClick()">+ Vendre</button>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- Section Hero -->
+        <section class="hero">
+            <div class="container hero-grid">
+                <div>
+                    <span class="hero-tag" data-reveal>100 % Réel · Zéro fausse annonce</span>
+                    <h1 data-reveal style="--reveal-delay: 50ms;">Achetez, négociez et revendez en toute clarté.</h1>
+                    <p data-reveal style="--reveal-delay: 90ms;">Une plateforme minimaliste conçue pour tout le monde. Connectez-vous par email ou téléphone, débloquez votre fil personnalisé et négociez directement avec les vendeurs.</p>
+                    <div class="hero-buttons" data-reveal style="--reveal-delay: 130ms;">
+                        <button type="button" class="btn btn-navy" id="heroPrimaryBtn" onclick="openModal('modalAuth')">Se connecter / S'inscrire</button>
+                        <button type="button" class="btn btn-outline" onclick="handleSellClick()">Déposer une annonce</button>
+                    </div>
+                </div>
+
+                <!-- Tableau de bord interactif & addictif -->
+                <aside class="engagement-card" id="missions" aria-labelledby="progress-title" tabindex="-1" data-reveal style="--reveal-delay: 100ms;">
+                    <div class="engagement-header">
+                        <h2 id="progress-title">Votre progression</h2>
+                        <span class="level-badge" id="levelBadge">Niveau 1</span>
+                    </div>
+                    <p id="progressSubtitle">Complétez votre profil et échangez pour progresser.</p>
+                    <div class="progress-track" role="progressbar" aria-label="Progression du compte" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <details class="mission-details" id="missionDetails">
+                        <summary>Comment gagner des points</summary>
+                        <ul class="mission-list" id="missionList">
+                            <li class="mission-item" id="m-login">
+                                <span>1. Créer un profil (Email ou Tél)</span>
+                                <strong>+50 pts</strong>
+                            </li>
+                            <li class="mission-item" id="m-fav">
+                                <span>2. Sauvegarder un article en favori</span>
+                                <strong>+30 pts</strong>
+                            </li>
+                            <li class="mission-item" id="m-offer">
+                                <span>3. Faire une offre ou publier</span>
+                                <strong>+70 pts</strong>
+                            </li>
+                        </ul>
+                    </details>
+                </aside>
+            </div>
+        </section>
+
+        <!-- Catalogue dynamique -->
+        <section id="catalogue" class="catalog" aria-labelledby="catalog-heading">
+            <div class="container">
+                <div class="toolbar">
+                    <div class="toolbar-top" data-reveal>
+                        <div>
+                            <h2 id="catalog-heading" style="font-size: 1.9rem; font-weight: 800;">Annonces de la communauté</h2>
+                            <p style="color: var(--text-muted); font-size: 0.95rem;" id="catalogSub">Connectez-vous pour accéder aux articles réels et à vos recommandations.</p>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" id="btnFavFilter" aria-pressed="false" onclick="toggleFavOnly()">
+                            ♥ Mes favoris (<span id="favCount">0</span>)
+                        </button>
+                    </div>
+
+                    <div class="search-sort-row" data-reveal>
+                        <div class="search-input-wrap">
+                            <label for="searchInput" class="sr-only">Rechercher un article</label>
+                            <input type="search" id="searchInput" class="search-input" placeholder="Rechercher par mot-clé (ex: montre, veste, lampe...)" oninput="renderCatalog()">
+                        </div>
+                        <div>
+                            <label for="sortSelect" class="sr-only">Trier les annonces</label>
+                            <select id="sortSelect" class="sort-select" onchange="renderCatalog()">
+                                <option value="recommended">Tri : Recommandés pour vous</option>
+                                <option value="newest">Tri : Plus récents</option>
+                                <option value="price-asc">Prix : Croissant</option>
+                                <option value="price-desc">Prix : Décroissant</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filters" role="group" aria-label="Filtrer par catégorie" data-reveal>
+                        <button type="button" class="filter-btn" data-cat="all" aria-pressed="true" onclick="setCategory('all', this)">Tout</button>
+                        <button type="button" class="filter-btn" data-cat="Mode" aria-pressed="false" onclick="setCategory('Mode', this)">Mode</button>
+                        <button type="button" class="filter-btn" data-cat="Design" aria-pressed="false" onclick="setCategory('Design', this)">Design</button>
+                        <button type="button" class="filter-btn" data-cat="Tech" aria-pressed="false" onclick="setCategory('Tech', this)">Tech</button>
+                        <button type="button" class="filter-btn" data-cat="Maison" aria-pressed="false" onclick="setCategory('Maison', this)">Maison</button>
+                    </div>
+                </div>
+
+                <!-- Contenu dynamique du catalogue -->
+                <div id="catalogContainer" aria-live="polite"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="footer">
+        <div class="container footer-row" data-reveal>
+            <div>
+                <strong>KOVA.</strong> — Plateforme d'achat-revente minimaliste, interactive et accessible à tous.
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="openModal('modalDb')">Configurer Base de données (Supabase)</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODALE 1 : Connexion & Profil d'intérêts -->
+    <div class="overlay" id="modalAuth" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <div class="dialog-box">
+            <div class="dialog-head">
+                <h3 id="authTitle">Connexion rapide</h3>
+                <button type="button" class="close-btn" onclick="closeModal('modalAuth')" aria-label="Fermer la fenêtre">&times;</button>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-field">
+                    <label for="authMethod">Méthode d'identification</label>
+                    <select id="authMethod" onchange="toggleAuthPlaceholder()">
+                        <option value="email">Adresse Email</option>
+                        <option value="phone">Numéro de téléphone</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="authIdentifier" id="authIdentifierLabel">Votre adresse email</label>
+                    <input type="email" id="authIdentifier" placeholder="exemple@domaine.fr" required>
+                </div>
+                <div class="form-field">
+                    <label for="authName">Votre prénom ou pseudo public</label>
+                    <input type="text" id="authName" placeholder="Ex: Camille" required>
+                </div>
+                <fieldset class="form-field" style="border: none;">
+                    <legend style="font-weight: 600; font-size: 0.9rem; margin-bottom: 8px;">Vos centres d'intérêt (pour personnaliser votre fil) :</legend>
+                    <div class="interest-grid">
+                        <label class="interest-check"><input type="checkbox" name="interests" value="Mode" checked> Mode</label>
+                        <label class="interest-check"><input type="checkbox" name="interests" value="Tech" checked> Tech</label>
+                        <label class="interest-check"><input type="checkbox" name="interests" value="Design"> Design</label>
+                        <label class="interest-check"><input type="checkbox" name="interests" value="Maison"> Maison</label>
+                    </div>
+                </fieldset>
+                <button type="submit" class="btn btn-navy" style="width: 100%;">Accéder à mon espace (+50 pts)</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE 2 : Publier une vraie annonce -->
+    <div class="overlay" id="modalSell" role="dialog" aria-modal="true" aria-labelledby="sellTitle">
+        <div class="dialog-box">
+            <div class="dialog-head">
+                <h3 id="sellTitle">Déposer une annonce réelle</h3>
+                <button type="button" class="close-btn" onclick="closeModal('modalSell')" aria-label="Fermer la fenêtre">&times;</button>
+            </div>
+            <form onsubmit="handleCreateListing(event)">
+                <div class="form-field">
+                    <label for="itemTitle">Titre de l'article</label>
+                    <input type="text" id="itemTitle" placeholder="Ex: Fauteuil scandinave chêne massif" required>
+                </div>
+                <div class="form-field">
+                    <label for="itemCat">Catégorie</label>
+                    <select id="itemCat">
+                        <option value="Mode">Mode</option>
+                        <option value="Design">Design</option>
+                        <option value="Tech">Tech</option>
+                        <option value="Maison">Maison</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="itemCond">État de l'objet</label>
+                    <select id="itemCond">
+                        <option value="Neuf avec étiquette">Neuf avec étiquette</option>
+                        <option value="Comme neuf">Comme neuf</option>
+                        <option value="Très bon état">Très bon état</option>
+                        <option value="Bon état">Bon état</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="itemPrice">Prix de vente (€)</label>
+                    <input type="number" id="itemPrice" min="1" step="1" placeholder="85" required>
+                </div>
+                <div class="form-field">
+                    <label for="itemPhotoFile">Ajouter une photo depuis votre appareil (optionnel)</label>
+                    <input type="file" id="itemPhotoFile" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-navy" style="width: 100%;">Publier l'annonce maintenant</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE 3 : Messagerie & Négociation d'offre -->
+    <div class="overlay" id="modalChat" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
+        <div class="dialog-box">
+            <div class="dialog-head">
+                <div>
+                    <h3 id="chatTitle">Discuter & Faire une offre</h3>
+                    <p id="chatSubtitle" style="font-size: 0.85rem; color: var(--text-muted);"></p>
+                </div>
+                <button type="button" class="close-btn" onclick="closeModal('modalChat')" aria-label="Fermer la messagerie">&times;</button>
+            </div>
+            <div class="chat-history" id="chatHistory" aria-live="polite"></div>
+            <form onsubmit="handleSendMessage(event)">
+                <div class="form-field">
+                    <label for="offerAmount">Proposer un prix (€) — optionnel</label>
+                    <input type="number" id="offerAmount" min="1" placeholder="Ex: 70">
+                </div>
+                <div class="form-field">
+                    <label for="chatMessage">Votre message au vendeur</label>
+                    <input type="text" id="chatMessage" placeholder="Bonjour, l'article est-il toujours disponible ?" required>
+                </div>
+                <button type="submit" class="btn btn-navy" style="width: 100%;">Envoyer l'offre / le message</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE 4 : Configuration Supabase (Base de données gratuite) -->
+    <div class="overlay" id="modalDb" role="dialog" aria-modal="true" aria-labelledby="dbTitle">
+        <div class="dialog-box">
+            <div class="dialog-head">
+                <h3 id="dbTitle">Synchronisation Base de données</h3>
+                <button type="button" class="close-btn" onclick="closeModal('modalDb')" aria-label="Fermer">&times;</button>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
+                Sans configuration, vos annonces sont enregistrées localement sur votre appareil. Ajoutez vos clés gratuites <strong>Supabase</strong> pour partager les annonces entre tous les visiteurs.
+            </p>
+            <form onsubmit="saveDbConfig(event)">
+                <div class="form-field">
+                    <label for="sbUrl">Supabase Project URL</label>
+                    <input type="url" id="sbUrl" placeholder="https://xxxxx.supabase.co">
+                </div>
+                <div class="form-field">
+                    <label for="sbKey">Supabase Anon Public Key</label>
+                    <input type="text" id="sbKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-navy" style="flex: 1;">Enregistrer</button>
+                    <button type="button" class="btn btn-outline" onclick="clearDbConfig()">Mode Local</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Zone de notification accessible -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        // État global de l'application
+        let currentUser = JSON.parse(localStorage.getItem('kova_user')) || null;
+        let listings = JSON.parse(localStorage.getItem('kova_listings')) || [];
+        let favorites = JSON.parse(localStorage.getItem('kova_favorites')) || [];
+        let messages = JSON.parse(localStorage.getItem('kova_messages')) || {};
+        let dbConfig = JSON.parse(localStorage.getItem('kova_db')) || { url: '', key: '' };
+
+        let activeCategory = 'all';
+        let onlyFavorites = false;
+        let activeListingId = null;
+
+        const systemMotionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let revealObserver = null;
+
+        function prefersReducedMotion() {
+            return systemMotionPreference.matches || document.documentElement.dataset.motion === 'reduced';
+        }
+
+        // Le contenu reste visible sans JavaScript ou sans IntersectionObserver.
+        function observeReveals(root = document, includeVisible = false) {
+            if (!revealObserver || prefersReducedMotion()) return;
+            root.querySelectorAll('[data-reveal]:not([data-reveal-ready])').forEach(el => {
+                el.dataset.revealReady = 'true';
+                const bounds = el.getBoundingClientRect();
+                // Les recherches et les favoris ne font pas disparaître les résultats déjà à l'écran.
+                if (bounds.bottom <= 0 || (!includeVisible && bounds.top < window.innerHeight)) return;
+                el.classList.add('reveal-pending');
+                revealObserver.observe(el);
+            });
+        }
+
+        function initializePageMotion() {
+            const reduced = prefersReducedMotion();
+            document.getElementById('btnMotion').setAttribute('aria-pressed', String(reduced));
+            if (revealObserver) {
+                revealObserver.disconnect();
+                revealObserver = null;
+            }
+            document.querySelectorAll('.reveal-pending, .is-revealing').forEach(el => {
+                el.classList.remove('reveal-pending', 'is-revealing');
+            });
+            if (reduced || !('IntersectionObserver' in window)) return;
+
+            revealObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const el = entry.target;
+                    el.classList.remove('reveal-pending');
+                    el.classList.add('is-revealing');
+                    revealObserver.unobserve(el);
+                    el.addEventListener('animationend', () => el.classList.remove('is-revealing'), { once: true });
+                });
+            }, { threshold: 0, rootMargin: '0px 0px -16px 0px' });
+            observeReveals(document, true);
+        }
+
+        // Un champ atteint au clavier est immédiatement net et visible.
+        document.addEventListener('focusin', event => {
+            const el = event.target.closest('[data-reveal]');
+            if (!el) return;
+            el.classList.remove('reveal-pending', 'is-revealing');
+            if (revealObserver) revealObserver.unobserve(el);
+        });
+
+        systemMotionPreference.addEventListener('change', initializePageMotion);
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            if (dbConfig.url) document.getElementById('sbUrl').value = dbConfig.url;
+            if (dbConfig.key) document.getElementById('sbKey').value = dbConfig.key;
+            updateUI();
+            initializePageMotion();
+            const header = document.querySelector('header');
+            let scrollFrame = null;
+            const updateHeader = () => {
+                header.classList.toggle('is-scrolled', window.scrollY > 12);
+                scrollFrame = null;
+            };
+            updateHeader();
+            window.addEventListener('scroll', () => {
+                if (scrollFrame === null) scrollFrame = requestAnimationFrame(updateHeader);
+            }, { passive: true });
+            if (dbConfig.url && dbConfig.key) {
+                fetchSupabaseListings();
+            }
+        });
+
+        // Accessibilité : Taille texte, Contraste, Animations
+        function setFontScale(scale) {
+            document.documentElement.style.setProperty('--font-scale', scale);
+            document.getElementById('btnTextNormal').setAttribute('aria-pressed', scale === 1);
+            document.getElementById('btnTextLarge').setAttribute('aria-pressed', scale > 1);
+            showToast(scale > 1 ? 'Taille du texte agrandie' : 'Taille du texte normale');
+        }
+
+        function toggleContrast() {
+            const isHigh = document.documentElement.getAttribute('data-contrast') === 'high';
+            if (isHigh) {
+                document.documentElement.removeAttribute('data-contrast');
+                document.getElementById('btnContrast').setAttribute('aria-pressed', 'false');
+                showToast('Contraste standard activé');
+            } else {
+                document.documentElement.setAttribute('data-contrast', 'high');
+                document.getElementById('btnContrast').setAttribute('aria-pressed', 'true');
+                showToast('Mode contraste élevé activé');
+            }
+        }
+
+        function toggleMotion() {
+            if (systemMotionPreference.matches) {
+                showToast('Animations réduites selon les préférences de votre appareil.');
+                return;
+            }
+            const isReduced = document.documentElement.getAttribute('data-motion') === 'reduced';
+            if (isReduced) {
+                document.documentElement.removeAttribute('data-motion');
+                document.getElementById('btnMotion').setAttribute('aria-pressed', 'false');
+                showToast('Animations activées');
+            } else {
+                document.documentElement.setAttribute('data-motion', 'reduced');
+                document.getElementById('btnMotion').setAttribute('aria-pressed', 'true');
+                showToast('Animations réduites');
+            }
+            initializePageMotion();
+        }
+
+        // Gestion des modales avec accessibilité clavier (Echap)
+        function openModal(id) {
+            const el = document.getElementById(id);
+            el.classList.add('open');
+            const firstInput = el.querySelector('input, select, button');
+            if (firstInput) firstInput.focus();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.overlay.open').forEach(el => el.classList.remove('open'));
+                const settings = document.getElementById('displaySettings');
+                if (settings.open) {
+                    const focusWasInside = settings.contains(document.activeElement);
+                    settings.open = false;
+                    if (focusWasInside) settings.querySelector('summary').focus();
+                }
+            }
+        });
+
+        document.addEventListener('click', event => {
+            const settings = document.getElementById('displaySettings');
+            if (settings.open && !settings.contains(event.target)) settings.open = false;
+        });
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3200);
+        }
+
+        // Authentification Email ou Téléphone
+        function toggleAuthPlaceholder() {
+            const method = document.getElementById('authMethod').value;
+            const input = document.getElementById('authIdentifier');
+            const label = document.getElementById('authIdentifierLabel');
+            if (method === 'phone') {
+                label.textContent = 'Votre numéro de téléphone';
+                input.type = 'tel';
+                input.placeholder = '06 12 34 56 78';
+            } else {
+                label.textContent = 'Votre adresse email';
+                input.type = 'email';
+                input.placeholder = 'exemple@domaine.fr';
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const method = document.getElementById('authMethod').value;
+            const identifier = document.getElementById('authIdentifier').value.trim();
+            const name = document.getElementById('authName').value.trim();
+            const interests = Array.from(document.querySelectorAll('input[name="interests"]:checked')).map(cb => cb.value);
+
+            currentUser = { name, identifier, method, interests };
+            localStorage.setItem('kova_user', JSON.stringify(currentUser));
+            closeModal('modalAuth');
+            updateUI();
+            showToast(`Bienvenue ${name} ! +50 points débloqués.`);
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('kova_user');
+            updateUI();
+            showToast('Vous êtes déconnecté.');
+        }
+
+        function handleSellClick() {
+            if (!currentUser) {
+                showToast('Connectez-vous d’abord pour publier une annonce.');
+                openModal('modalAuth');
+                return;
+            }
+            openModal('modalSell');
+        }
+
+        // Création d'une annonce réelle
+        function handleCreateListing(e) {
+            e.preventDefault();
+            const title = document.getElementById('itemTitle').value.trim();
+            const category = document.getElementById('itemCat').value;
+            const condition = document.getElementById('itemCond').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const fileInput = document.getElementById('itemPhotoFile');
+
+            const finalizeListing = (imageDataUrl) => {
+                const newItem = {
+                    id: Date.now(),
+                    title,
+                    category,
+                    condition,
+                    price,
+                    seller: currentUser.name,
+                    sellerContact: currentUser.identifier,
+                    image_url: imageDataUrl || '',
+                    created_at: new Date().toISOString()
+                };
+
+                listings.unshift(newItem);
+                localStorage.setItem('kova_listings', JSON.stringify(listings));
+
+                if (dbConfig.url && dbConfig.key) {
+                    pushSupabaseListing(newItem);
+                }
+
+                e.target.reset();
+                closeModal('modalSell');
+                updateUI();
+                showToast('Annonce publiée ! +70 points gagnés.');
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => finalizeListing(ev.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                finalizeListing('');
+            }
+        }
+
+        // Favoris
+        function toggleFavorite(id) {
+            if (!currentUser) {
+                openModal('modalAuth');
+                return;
+            }
+            const idx = favorites.indexOf(id);
+            if (idx === -1) {
+                favorites.push(id);
+                showToast('Ajouté aux favoris (+30 pts)');
+            } else {
+                favorites.splice(idx, 1);
+                showToast('Retiré des favoris');
+            }
+            localStorage.setItem('kova_favorites', JSON.stringify(favorites));
+            updateUI();
+        }
+
+        function toggleFavOnly() {
+            onlyFavorites = !onlyFavorites;
+            document.getElementById('btnFavFilter').setAttribute('aria-pressed', onlyFavorites);
+            renderCatalog();
+        }
+
+        function setCategory(cat, btn) {
+            activeCategory = cat;
+            document.querySelectorAll('.filter-btn').forEach(b => b.setAttribute('aria-pressed', 'false'));
+            btn.setAttribute('aria-pressed', 'true');
+            renderCatalog();
+        }
+
+        // Messagerie & Offres
+        function openChat(listingId) {
+            if (!currentUser) {
+                openModal('modalAuth');
+                return;
+            }
+            activeListingId = listingId;
+            const item = listings.find(l => l.id === listingId);
+            if (!item) return;
+
+            document.getElementById('chatTitle').textContent = item.title;
+            document.getElementById('chatSubtitle').textContent = `Vendu par ${item.seller} · Prix affiché : ${item.price} €`;
+            renderChatHistory();
+            openModal('modalChat');
+        }
+
+        function renderChatHistory() {
+            const box = document.getElementById('chatHistory');
+            const thread = messages[activeListingId] || [];
+            if (thread.length === 0) {
+                box.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin: auto;">Aucune discussion pour le moment. Envoyez un message ou proposez un prix.</p>';
+                return;
+            }
+            box.innerHTML = thread.map(m => `
+                <div class="msg-bubble ${m.sender === currentUser?.name ? 'mine' : ''}">
+                    ${m.offer ? `<div class="msg-offer-tag">Offre proposée : ${m.offer} €</div><br>` : ''}
+                    <strong>${escapeHtml(m.sender)} :</strong> ${escapeHtml(m.text)}
+                </div>
+            `).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function handleSendMessage(e) {
+            e.preventDefault();
+            const offer = document.getElementById('offerAmount').value;
+            const text = document.getElementById('chatMessage').value.trim();
+            if (!text) return;
+
+            if (!messages[activeListingId]) messages[activeListingId] = [];
+            messages[activeListingId].push({
+                sender: currentUser.name,
+                offer: offer ? parseFloat(offer) : null,
+                text,
+                date: new Date().toISOString()
+            });
+
+            localStorage.setItem('kova_messages', JSON.stringify(messages));
+            document.getElementById('offerAmount').value = '';
+            document.getElementById('chatMessage').value = '';
+            renderChatHistory();
+            updateUI();
+            showToast('Message et offre envoyés !');
+        }
+
+        // Gamification & Progression
+        function updateGamification() {
+            let points = 0;
+            const hasLogin = Boolean(currentUser);
+            const hasFav = favorites.length > 0;
+            const hasAction = listings.length > 0 || Object.keys(messages).length > 0;
+
+            if (hasLogin) points += 50;
+            if (hasFav) points += 30;
+            if (hasAction) points += 70;
+
+            document.getElementById('m-login').classList.toggle('done', hasLogin);
+            document.getElementById('m-fav').classList.toggle('done', hasFav);
+            document.getElementById('m-offer').classList.toggle('done', hasAction);
+
+            const pct = Math.min(100, Math.round((points / 150) * 100));
+            const level = points >= 150 ? 'Niveau 3 · Expert' : points >= 80 ? 'Niveau 2 · Actif' : 'Niveau 1 · Débutant';
+
+            document.getElementById('navPoints').textContent = `${points} pts`;
+            document.getElementById('pointsLink').setAttribute('aria-label', `${points} points · ${level}. Voir ma progression`);
+            document.getElementById('pointsLink').title = `${points} points · ${level}`;
+            document.getElementById('levelBadge').textContent = level;
+            document.getElementById('progressFill').style.transform = `scaleX(${pct / 100})`;
+            document.getElementById('progressBar').setAttribute('aria-valuenow', pct);
+            document.getElementById('favCount').textContent = favorites.length;
+        }
+
+        // Mise à jour globale de l'interface
+        function updateUI() {
+            const btnAuth = document.getElementById('btnAuth');
+            const heroBtn = document.getElementById('heroPrimaryBtn');
+            const catalogSub = document.getElementById('catalogSub');
+
+            if (currentUser) {
+                btnAuth.textContent = `${currentUser.name} (Déconnexion)`;
+                btnAuth.onclick = handleLogout;
+                heroBtn.textContent = 'Publier une annonce réelle';
+                heroBtn.onclick = handleSellClick;
+                const prefs = currentUser.interests.length ? currentUser.interests.join(', ') : 'Toutes catégories';
+                catalogSub.textContent = `Connecté en tant que ${currentUser.name} · Préférences actives : ${prefs}`;
+            } else {
+                btnAuth.textContent = 'Connexion';
+                btnAuth.onclick = () => openModal('modalAuth');
+                heroBtn.textContent = 'Se connecter / S’inscrire';
+                heroBtn.onclick = () => openModal('modalAuth');
+                catalogSub.textContent = 'Connectez-vous pour accéder aux articles réels et à vos recommandations.';
+            }
+
+            updateGamification();
+            renderCatalog();
+        }
+
+        // Rendu du catalogue (uniquement annonces réelles après connexion)
+        function renderCatalog() {
+            const container = document.getElementById('catalogContainer');
+            if (revealObserver) {
+                container.querySelectorAll('.reveal-pending').forEach(el => revealObserver.unobserve(el));
+            }
+
+            if (!currentUser) {
+                container.innerHTML = `
+                    <div class="state-box" data-reveal>
+                        <h3>Connectez-vous pour voir les annonces réelles</h3>
+                        <p>KOVA n'affiche aucune fausse annonce. Identifiez-vous avec votre email ou votre numéro de téléphone pour découvrir les objets mis en vente par les membres selon vos centres d'intérêt.</p>
+                        <button type="button" class="btn btn-navy" onclick="openModal('modalAuth')">Se connecter maintenant</button>
+                    </div>
+                `;
+                observeReveals(container);
+                return;
+            }
+
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const sort = document.getElementById('sortSelect').value;
+
+            let filtered = listings.filter(item => {
+                const matchCat = activeCategory === 'all' || item.category === activeCategory;
+                const matchFav = !onlyFavorites || favorites.includes(item.id);
+                const matchQuery = !query || item.title.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
+                return matchCat && matchFav && matchQuery;
+            });
+
+            // Tri intelligent basé sur les préférences
+            filtered.sort((a, b) => {
+                if (sort === 'recommended') {
+                    const aPref = currentUser.interests.includes(a.category) ? 1 : 0;
+                    const bPref = currentUser.interests.includes(b.category) ? 1 : 0;
+                    if (bPref !== aPref) return bPref - aPref;
+                    return b.id - a.id;
+                }
+                if (sort === 'price-asc') return a.price - b.price;
+                if (sort === 'price-desc') return b.price - a.price;
+                return b.id - a.id;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="state-box" data-reveal>
+                        <h3>Aucune annonce réelle ne correspond encore</h3>
+                        <p>Soyez le premier à mettre un objet en vente dans cette catégorie ou élargissez vos filtres.</p>
+                        <button type="button" class="btn btn-navy" onclick="openModal('modalSell')">+ Déposer une première annonce</button>
+                    </div>
+                `;
+                observeReveals(container);
+                return;
+            }
+
+            container.innerHTML = `<div class="products-grid">${filtered.map(item => {
+                const isFav = favorites.includes(item.id);
+                const isRecommended = currentUser.interests.includes(item.category);
+                const msgCount = (messages[item.id] || []).length;
+                return `
+                    <article class="product-card" data-reveal>
+                        <div class="product-media">
+                            ${isRecommended ? '<span class="badge-top-left">Recommandé</span>' : ''}
+                            <button type="button" class="fav-btn" aria-pressed="${isFav}" aria-label="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}" onclick="toggleFavorite(${item.id})">
+                                ${isFav ? '♥' : '♡'}
+                            </button>
+                            ${item.image_url
+                                ? `<img src="${item.image_url}" alt="${escapeHtml(item.title)}">`
+                                : `<span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">${escapeHtml(item.category)} · Photo non ajoutée</span>`
+                            }
+                        </div>
+                        <div class="product-body">
+                            <div class="product-meta">
+                                <span>${escapeHtml(item.category)}</span>
+                                <span>${escapeHtml(item.condition)}</span>
+                            </div>
+                            <h3 class="product-title">${escapeHtml(item.title)}</h3>
+                            <p class="product-seller">Vendeur : ${escapeHtml(item.seller)}</p>
+                            <div class="product-footer">
+                                <div class="price-row">
+                                    <span class="price-val">${item.price} €</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);">${msgCount} message(s)</span>
+                                </div>
+                                <div class="card-actions">
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="openChat(${item.id})">Faire une offre</button>
+                                    <button type="button" class="btn btn-navy btn-sm" onclick="openChat(${item.id})">Contacter</button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('')}</div>`;
+            observeReveals(container);
+        }
+
+        // Intégration Supabase (REST API sans dépendance externe)
+        function saveDbConfig(e) {
+            e.preventDefault();
+            dbConfig = {
+                url: document.getElementById('sbUrl').value.trim().replace(/\/$/, ''),
+                key: document.getElementById('sbKey').value.trim()
+            };
+            localStorage.setItem('kova_db', JSON.stringify(dbConfig));
+            closeModal('modalDb');
+            showToast('Base de données Supabase enregistrée.');
+            if (dbConfig.url && dbConfig.key) fetchSupabaseListings();
+        }
+
+        function clearDbConfig() {
+            dbConfig = { url: '', key: '' };
+            localStorage.removeItem('kova_db');
+            document.getElementById('sbUrl').value = '';
+            document.getElementById('sbKey').value = '';
+            closeModal('modalDb');
+            showToast('Mode stockage local activé.');
+        }
+
+        async function fetchSupabaseListings() {
+            try {
+                const res = await fetch(`${dbConfig.url}/rest/v1/listings?select=*&order=created_at.desc`, {
+                    headers: {
+                        'apikey': dbConfig.key,
+                        'Authorization': `Bearer ${dbConfig.key}`
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data)) {
+                        listings = data;
+                        localStorage.setItem('kova_listings', JSON.stringify(listings));
+                        renderCatalog();
+                    }
+                }
+            } catch (err) {
+                console.warn('Synchronisation Supabase indisponible, mode local actif.');
+            }
+        }
+
+        async function pushSupabaseListing(item) {
+            try {
+                await fetch(`${dbConfig.url}/rest/v1/listings`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': dbConfig.key,
+                        'Authorization': `Bearer ${dbConfig.key}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        title: item.title,
+                        category: item.category,
+                        condition: item.condition,
+                        price: item.price,
+                        seller: item.seller,
+                        image_url: item.image_url
+                    })
+                });
+            } catch (err) {
+                console.warn('Erreur envoi Supabase.');
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[m]);
+        }
+    </script>
+</body>
+</html>
