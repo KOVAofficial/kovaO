@@ -1,0 +1,2918 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOVA — L'achat-revente minimaliste, interactif & accessible</title>
+    <style>
+        :root {
+            --bg-main: #FFFFFF;
+            --bg-alt: #F5F5F7;
+            --text-main: #111111;
+            --text-muted: #55555A;
+            --navy: #0F1E36;
+            --navy-hover: #1D355E;
+            --border: #DCDCE0;
+            --radius: 10px;
+            --focus-ring: #0F1E36;
+            --font-scale: 1;
+            --success: #166534;
+            --success-bg: #DCFCE7;
+        }
+
+        [data-contrast="high"] {
+            --bg-main: #FFFFFF;
+            --bg-alt: #EBEBEF;
+            --text-main: #000000;
+            --text-muted: #111111;
+            --navy: #000000;
+            --navy-hover: #222222;
+            --border: #000000;
+            --focus-ring: #005FCC;
+        }
+
+        [data-motion="reduced"], [data-motion="reduced"] *, [data-motion="reduced"] *::before, [data-motion="reduced"] *::after {
+            animation-duration: 0.001ms !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: calc(16px * var(--font-scale));
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--focus-ring);
+            outline-offset: 2px;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 16px;
+            background: var(--navy);
+            color: #FFFFFF;
+            padding: 12px 18px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            z-index: 1000;
+            text-decoration: none;
+        }
+        .skip-link:focus {
+            top: 16px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Barre d'accessibilité universelle */
+        .a11y-bar {
+            position: relative;
+            z-index: 200;
+            background-color: var(--bg-alt);
+            border-bottom: 1px solid var(--border);
+            padding: 4px 0;
+            font-size: 0.78rem;
+        }
+        .a11y-inner {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .a11y-hint {
+            color: var(--text-muted);
+        }
+        .a11y-settings summary {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 36px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+        }
+        .a11y-settings summary::-webkit-details-marker {
+            display: none;
+        }
+        .a11y-settings summary:hover, .a11y-settings[open] summary {
+            background: var(--bg-main);
+        }
+        .settings-chevron {
+            transition: transform 0.2s ease;
+        }
+        .a11y-settings[open] .settings-chevron {
+            transform: rotate(180deg);
+        }
+        .a11y-controls {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 20px;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            width: 350px;
+            max-width: calc(100vw - 40px);
+            padding: 12px;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 28px rgba(15, 30, 54, 0.08);
+        }
+        .a11y-btn {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 44px;
+            flex: 1 1 140px;
+        }
+        .a11y-btn:hover, .a11y-btn[aria-pressed="true"] {
+            background: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+        }
+
+        /* Navigation principale */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        header.is-scrolled {
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 20px rgba(15, 30, 54, 0.06);
+        }
+
+        [data-contrast="high"] header {
+            background-color: var(--bg-main);
+            backdrop-filter: none;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 74px;
+            gap: 16px;
+            padding: 10px 0;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 8px 4px;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .streak-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            min-height: 38px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .streak-pill:hover {
+            color: var(--navy);
+            border-color: var(--navy);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            min-height: 44px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: var(--radius);
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-navy {
+            background-color: var(--navy);
+            color: #FFFFFF;
+        }
+
+        .btn-navy:hover {
+            background-color: var(--navy-hover);
+        }
+
+        .btn-outline {
+            background-color: #FFFFFF;
+            color: var(--text-main);
+            border-color: var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-main);
+        }
+
+        .btn-sm {
+            padding: 8px 14px;
+            min-height: 38px;
+            font-size: 0.875rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 64px 0 72px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+            gap: 48px;
+            align-items: center;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--navy);
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 99px;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            font-size: 3.1rem;
+            font-weight: 800;
+            letter-spacing: -0.035em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 520px;
+            margin-bottom: 32px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Carte interactive de progression utilisateur */
+        .engagement-card {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            scroll-margin-top: 110px;
+        }
+
+        #progress-title {
+            font-size: 1rem;
+        }
+
+        .hero #progressSubtitle {
+            font-size: 0.82rem;
+            margin-bottom: 0;
+        }
+
+        .engagement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .level-badge {
+            background: var(--navy);
+            color: #FFFFFF;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 99px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--navy);
+            width: 100%;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .mission-details summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-height: 44px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .mission-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .mission-details summary::after {
+            content: '+';
+            font-size: 1.1rem;
+        }
+
+        .mission-details[open] summary::after {
+            content: '−';
+        }
+
+        .mission-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .mission-item {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.78rem;
+        }
+
+        .mission-item strong {
+            white-space: nowrap;
+        }
+
+        .mission-item.done {
+            background: var(--success-bg);
+            border-color: var(--success);
+        }
+
+        /* Barre de recherche, tri & filtres */
+        .catalog {
+            padding: 64px 0 96px;
+            border-top: 1px solid var(--border);
+        }
+
+        .toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .toolbar-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .search-sort-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .search-input-wrap {
+            flex: 1;
+            min-width: 240px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            min-height: 46px;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            background: #FFFFFF;
+            color: var(--text-main);
+        }
+
+        .sort-select {
+            min-height: 46px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            background: #FFFFFF;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            min-height: 40px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: #FFFFFF;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .filter-btn[aria-pressed="true"] {
+            background-color: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+        }
+
+        /* État invité / Vide */
+        .state-box {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 48px 24px;
+            text-align: center;
+            max-width: 680px;
+            margin: 24px auto;
+        }
+
+        .state-box h3 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+
+        .state-box p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        /* Grille produits */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #FFFFFF;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--navy);
+        }
+
+        .product-media {
+            background: var(--bg-alt);
+            aspect-ratio: 4 / 3;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .product-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .badge-top-left {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--navy);
+            color: #FFFFFF;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.15rem;
+            color: var(--text-main);
+        }
+
+        .fav-btn[aria-pressed="true"] {
+            background: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+        }
+
+        .product-body {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .product-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .product-seller {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .product-footer {
+            margin-top: auto;
+            padding-top: 14px;
+            border-top: 1px solid var(--bg-alt);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        /* Modales & Drawers accessibles */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 17, 17, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            padding: 16px;
+        }
+
+        .overlay.open {
+            display: flex;
+        }
+
+        .dialog-box {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px;
+        }
+
+        .dialog-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .close-btn {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-field {
+            margin-bottom: 16px;
+        }
+
+        .form-field label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .form-field input, .form-field select, .form-field textarea {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            background: #FFFFFF;
+            color: var(--text-main);
+        }
+
+        .interest-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .interest-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .interest-check input {
+            width: 18px;
+            height: 18px;
+            min-height: auto;
+        }
+
+        /* Messagerie & Offres */
+        .chat-history {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            min-height: 180px;
+            max-height: 260px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .msg-bubble {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .msg-bubble.mine {
+            background: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+            align-self: flex-end;
+            max-width: 85%;
+        }
+
+        .msg-offer-tag {
+            display: inline-block;
+            background: var(--bg-alt);
+            color: var(--navy);
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        /* Toast de notification accessible */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--navy);
+            color: #FFFFFF;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 500;
+            display: none;
+        }
+        .toast.show {
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-alt);
+            border-top: 1px solid var(--border);
+            padding: 48px 0 32px;
+        }
+
+        .footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* Apparitions courtes, déclenchées une seule fois à l'entrée dans la page. */
+        [data-reveal].reveal-pending {
+            opacity: 0;
+        }
+
+        [data-reveal].is-revealing {
+            animation: reveal-content 0.56s cubic-bezier(0.2, 0.65, 0.3, 1) both;
+            animation-delay: var(--reveal-delay, 0ms);
+        }
+
+        @keyframes reveal-content {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+                filter: blur(3px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        [data-motion="reduced"] [data-reveal] {
+            opacity: 1 !important;
+            animation: none !important;
+            transform: none !important;
+            filter: none !important;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html, *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.001ms !important;
+                transition-duration: 0.001ms !important;
+            }
+            [data-reveal] {
+                opacity: 1 !important;
+                animation: none !important;
+                transform: none !important;
+                filter: none !important;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .engagement-card {
+                width: 100%;
+                max-width: 480px;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .a11y-hint {
+                display: none;
+            }
+            .a11y-inner {
+                justify-content: flex-end;
+            }
+            .nav-inner {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .nav-actions {
+                margin-left: auto;
+                justify-content: flex-end;
+            }
+            .nav-actions .btn-sm {
+                padding: 6px 9px;
+                font-size: 0.78rem;
+            }
+            .streak-pill, .nav-actions .btn-sm {
+                min-height: 44px;
+            }
+            .logo {
+                font-size: 1.2rem;
+                gap: 5px;
+            }
+            .logo svg {
+                width: 26px;
+            }
+            .hero {
+                padding: 40px 0 44px;
+            }
+            .hero-grid {
+                gap: 28px;
+            }
+            .engagement-card {
+                padding: 14px 16px;
+            }
+            .search-input-wrap {
+                min-width: 0;
+                flex-basis: 100%;
+            }
+            .search-sort-row > div, .sort-select {
+                width: 100%;
+            }
+        }
+    /* ===== KOVA+ : apparence, animations & menu ===== */
+:root{--ease:cubic-bezier(.22,1,.36,1);--shadow-sm:0 2px 8px rgba(15,30,54,.06);--shadow-md:0 14px 36px rgba(15,30,54,.12)}
+body{background:radial-gradient(1200px 500px at 85% -10%,rgba(29,53,94,.07),transparent 60%),var(--bg-main)}
+::selection{background:var(--navy);color:#fff}
+#scrollBar{position:fixed;top:0;left:0;height:3px;width:100%;background:linear-gradient(90deg,var(--navy),#4A78C2);transform:scaleX(0);transform-origin:0 50%;z-index:900;pointer-events:none}
+.menu-btn{width:46px;height:46px;flex:0 0 auto;display:grid;place-content:center;gap:5px;background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:background .25s,transform .25s var(--ease),box-shadow .25s}
+.menu-btn:hover{background:#fff;box-shadow:var(--shadow-sm);transform:scale(1.06)}
+.menu-btn:active{transform:scale(.94)}
+.menu-btn span{display:block;width:22px;height:2.5px;border-radius:2px;background:var(--text-main);transition:transform .35s var(--ease),opacity .2s,width .25s}
+.menu-btn span:nth-child(2){width:15px;margin-left:auto}
+.menu-btn:hover span:nth-child(2){width:22px}
+.menu-btn[aria-expanded="true"] span:nth-child(1){transform:translateY(7.5px) rotate(45deg)}
+.menu-btn[aria-expanded="true"] span:nth-child(2){opacity:0}
+.menu-btn[aria-expanded="true"] span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}
+.nav-inner .logo{margin-right:auto}
+#drawerBackdrop{position:fixed;inset:0;background:rgba(10,18,32,.45);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s;z-index:1200}
+#drawerBackdrop.open{opacity:1;visibility:visible}
+#drawer{position:fixed;top:0;left:0;bottom:0;width:340px;max-width:88vw;background:var(--bg-main);z-index:1300;display:flex;flex-direction:column;transform:translateX(-102%);visibility:hidden;transition:transform .45s var(--ease),visibility .45s;box-shadow:var(--shadow-md);overflow-y:auto;overscroll-behavior:contain}
+#drawer.open{transform:none;visibility:visible}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-main);z-index:1}
+.drawer-head strong{font-size:1.25rem;font-weight:800;letter-spacing:-.02em}
+.drawer-close{width:42px;height:42px;border-radius:10px;border:1px solid var(--border);background:var(--bg-alt);font-size:1.2rem;cursor:pointer;transition:transform .3s var(--ease)}
+.drawer-close:hover{transform:rotate(90deg)}
+.drawer-user{margin:16px 20px 4px;padding:14px 16px;border-radius:var(--radius);background:linear-gradient(135deg,var(--navy),var(--navy-hover));color:#fff;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.9rem}
+.drawer-user b{font-size:1rem}
+.drawer-group{padding:14px 12px 4px}
+.drawer-group h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 10px 6px}
+.drawer-item{display:flex;align-items:center;gap:12px;width:100%;min-height:46px;padding:9px 12px;border:0;border-radius:10px;background:none;color:var(--text-main);font:inherit;font-weight:600;font-size:.95rem;text-align:left;cursor:pointer;text-decoration:none;opacity:0;transform:translateX(-14px);transition:background .2s,padding-left .25s var(--ease)}
+#drawer.open .drawer-item{opacity:1;transform:none;transition:opacity .4s var(--ease) calc(var(--i)*35ms + 120ms),transform .5s var(--ease) calc(var(--i)*35ms + 120ms),background .2s,padding-left .25s var(--ease)}
+.drawer-item:hover,.drawer-item:focus-visible{background:var(--bg-alt);padding-left:18px}
+.drawer-item .ico{width:30px;text-align:center;font-size:1.1rem}
+.drawer-item kbd,.kbd-tip kbd{margin-left:auto;font:600 .72rem ui-monospace,Menlo,monospace;padding:2px 7px;border:1px solid var(--border);border-bottom-width:2px;border-radius:6px;background:var(--bg-alt);color:var(--text-muted)}
+.drawer-item .count{margin-left:auto;background:var(--navy);color:#fff;font-size:.72rem;padding:1px 8px;border-radius:99px}
+.drawer-foot{margin-top:auto;padding:16px 20px;font-size:.78rem;color:var(--text-muted);border-top:1px solid var(--border)}
+body.drawer-open{overflow:hidden}
+/* Entrées animées */
+@keyframes riseIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hero .container>*,.hero-content>*{animation:riseIn .9s var(--ease) both}
+.hero .container>*:nth-child(2),.hero-content>*:nth-child(2){animation-delay:.12s}
+.hero .container>*:nth-child(3),.hero-content>*:nth-child(3){animation-delay:.24s}
+.hero .container>*:nth-child(4),.hero-content>*:nth-child(4){animation-delay:.36s}
+.hero svg{animation:floaty 6s ease-in-out infinite}
+.btn{position:relative;overflow:hidden;transition:transform .25s var(--ease),box-shadow .25s,background .2s,color .2s,border-color .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,30,54,.16)}
+.btn:active{transform:translateY(0) scale(.97)}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:ripple .6s ease-out forwards;pointer-events:none}
+@keyframes ripple{to{transform:scale(3.2);opacity:0}}
+.product-card{transition:transform .4s var(--ease),box-shadow .4s var(--ease),border-color .3s;will-change:transform}
+.product-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-md);border-color:var(--navy)}
+.product-media img{transition:transform .7s var(--ease)}
+.product-card:hover .product-media img{transform:scale(1.07)}
+.fav-btn{transition:transform .3s var(--ease)}
+.fav-btn:hover{transform:scale(1.2)}
+.fav-btn[aria-pressed="true"]{animation:pop .45s var(--ease)}
+@keyframes pop{40%{transform:scale(1.45)}}
+.filter-btn{transition:transform .25s var(--ease),background .2s,color .2s}
+.filter-btn:hover{transform:translateY(-2px)}
+.overlay.open>*{animation:modalIn .45s var(--ease) both}
+@keyframes modalIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.nav-links a{position:relative}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease)}
+.nav-links a:hover::after,.nav-links a.active::after{transform:scaleX(1)}
+#toTop{position:fixed;right:20px;bottom:20px;width:48px;height:48px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:1.3rem;cursor:pointer;box-shadow:var(--shadow-md);opacity:0;transform:translateY(20px) scale(.8);visibility:hidden;transition:all .4s var(--ease);z-index:800}
+#toTop.show{opacity:1;transform:none;visibility:visible}
+#toTop:hover{transform:translateY(-4px)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+/* ===== KOVA+ v2 ===== */
+body::before,body::after{content:"";position:fixed;z-index:-1;width:46vmax;height:46vmax;border-radius:50%;filter:blur(90px);opacity:.14;pointer-events:none;animation:drift 22s ease-in-out infinite alternate}
+body::before{background:#4A78C2;top:-18vmax;right:-14vmax}
+body::after{background:#0F1E36;bottom:-22vmax;left:-16vmax;animation-delay:-9s}
+@keyframes drift{to{transform:translate(6vmax,5vmax) scale(1.15)}}
+#drawer{width:370px;background:rgba(255,255,255,.9);backdrop-filter:blur(22px) saturate(1.4);border-radius:0 26px 26px 0;border-right:1px solid rgba(255,255,255,.6)}
+[data-contrast="high"] #drawer{background:#fff;backdrop-filter:none}
+.drawer-head{background:linear-gradient(135deg,#0F1E36,#2B4F8F);color:#fff;border:0;padding:22px 20px}
+.drawer-head strong{color:#fff}
+.drawer-close{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)}
+.drawer-user{margin:-14px 16px 6px;position:relative;background:#fff;color:var(--text-main);border:1px solid var(--border);box-shadow:var(--shadow-md);border-radius:16px;justify-content:flex-start}
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:1.1rem;color:#fff;background:linear-gradient(135deg,#0F1E36,#4A78C2);flex:0 0 auto}
+.drawer-user #dPts{margin-left:auto;font-weight:800;color:var(--navy)}
+.drawer-group h3{display:flex;align-items:center;gap:8px}
+.drawer-group h3::after{content:"";flex:1;height:1px;background:var(--border)}
+.drawer-item{border-radius:14px}
+.drawer-item .ico{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:var(--bg-alt);font-size:1rem;transition:background .25s,color .25s,transform .3s var(--ease)}
+.drawer-item:hover .ico{background:var(--navy);color:#fff;transform:rotate(-8deg) scale(1.08)}
+.drawer-item:hover,.drawer-item:focus-visible{padding-left:14px;background:linear-gradient(90deg,var(--bg-alt),transparent)}
+.drawer-item .count.hot{background:#D92D20;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(217,45,32,.5)}70%,100%{box-shadow:0 0 0 9px transparent}}
+.menu-btn .dot{position:absolute;top:7px;right:7px;width:11px;height:11px;border-radius:50%;background:#D92D20;border:2px solid #fff;transform:scale(0);transition:transform .35s var(--ease)}
+.menu-btn{position:relative}.menu-btn.unread .dot{transform:scale(1);animation:pulse 1.6s infinite}
+.btn-navy::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);transform:translateX(-120%);transition:transform .7s var(--ease);pointer-events:none}
+.btn-navy:hover::after{transform:translateX(120%)}
+.product-card:hover{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-8px)}
+.msg-bubble{animation:bubble .45s var(--ease) both;transform-origin:left bottom}
+.msg-bubble.mine{transform-origin:right bottom}
+@keyframes bubble{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:none}}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.quick button{border:1px solid var(--border);background:var(--bg-alt);border-radius:99px;padding:6px 12px;font:600 .78rem inherit;font-family:inherit;cursor:pointer;transition:all .25s var(--ease)}
+.quick button:hover{background:var(--navy);color:#fff;transform:translateY(-2px)}
+.thread{display:flex;gap:12px;align-items:center;width:100%;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--bg-main);font:inherit;text-align:left;cursor:pointer;margin-bottom:8px;transition:transform .3s var(--ease),box-shadow .3s,border-color .2s;animation:riseIn .5s var(--ease) both}
+.thread:hover{transform:translateX(4px);box-shadow:var(--shadow-md);border-color:var(--navy)}
+.thread .t{flex:1;min-width:0}.thread b,.thread small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thread small{color:var(--text-muted)}.thread .count{background:#D92D20;color:#fff;border-radius:99px;font-size:.72rem;padding:2px 8px}
+.confetti{position:fixed;top:50%;left:50%;width:9px;height:14px;border-radius:2px;z-index:2000;pointer-events:none;animation:conf 1.1s var(--ease) forwards}
+@keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+/* ===== KOVA+ v3 ===== */
+[data-theme="dark"]{color-scheme:dark;--bg-main:#0B1220;--bg-alt:#141D2E;--text-main:#EEF2F8;--text-muted:#A5B0C3;--navy:#4C74C9;--navy-hover:#6A8FE0;--border:#27344D}
+[data-theme="dark"] header,[data-theme="dark"] header.is-scrolled{background:rgba(11,18,32,.9)}
+[data-theme="dark"] .a11y-btn,[data-theme="dark"] .menu-btn:hover,[data-theme="dark"] .drawer-user,[data-theme="dark"] .product-card,[data-theme="dark"] .dialog-box,[data-theme="dark"] .thread,[data-theme="dark"] .state-box{background:var(--bg-main);color:var(--text-main)}
+[data-theme="dark"] #drawer{background:rgba(11,18,32,.93)}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:var(--bg-alt);color:var(--text-main);border-color:var(--border)}
+.sec{padding:72px 0}.sec h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;letter-spacing:-.02em;margin-bottom:8px}.sec>.container>p.lead{color:var(--text-muted);max-width:640px;margin-bottom:32px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.step{padding:26px;border:1px solid var(--border);border-radius:18px;background:var(--bg-alt);transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.step:hover{transform:translateY(-6px);box-shadow:var(--shadow-md)}
+.step .n{width:42px;height:42px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800;margin-bottom:14px}
+.step h3{margin-bottom:6px}.step p{color:var(--text-muted);font-size:.95rem}
+.faq details{border:1px solid var(--border);border-radius:14px;padding:4px 18px;margin-bottom:10px;background:var(--bg-main);transition:box-shadow .3s}
+.faq details[open]{box-shadow:var(--shadow-sm)}
+.faq summary{cursor:pointer;font-weight:700;padding:14px 0;min-height:44px}
+.faq p{color:var(--text-muted);padding-bottom:14px}
+.cform{display:grid;gap:12px;max-width:560px}
+.cform input,.cform textarea{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font:inherit;background:var(--bg-main);color:var(--text-main)}
+.legal-bar{border-top:1px solid var(--border);padding:18px 20px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;font-size:.85rem;color:var(--text-muted)}
+.lk{background:none;border:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer;min-height:32px}
+.lk:hover{color:var(--text-main)}
+#cookieBar{position:fixed;left:16px;bottom:16px;max-width:380px;padding:16px;background:var(--bg-main);color:var(--text-main);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);z-index:850;font-size:.88rem;animation:riseIn .6s var(--ease) both}
+#cookieBar .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.more-wrap{text-align:center;margin:28px 0 8px}.result-count{color:var(--text-muted);font-size:.9rem;margin:0 0 14px}
+.product-card .product-title,.product-card .product-media{cursor:pointer}
+.det img{width:100%;max-height:320px;object-fit:cover;border-radius:12px;margin-bottom:12px}
+.det .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.legal-txt p{margin-bottom:10px;color:var(--text-muted);font-size:.92rem}
+/* ===== KOVA+ v5 : direction luxe ===== */
+:root:not([data-contrast="high"]){--bg-main:#FBFAF7;--bg-alt:#F3F0EA;--text-main:#14110F;--text-muted:#6B655C;--navy:#14110F;--navy-hover:#2E2820;--border:#DDD6C8;--radius:2px;--gold:#A8854A;--serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;--shadow-sm:none;--shadow-md:0 18px 40px rgba(20,17,15,.08)}
+[data-theme="dark"]:not([data-contrast="high"]){--bg-main:#0C0B0A;--bg-alt:#15130F;--text-main:#F3EEE4;--text-muted:#A39B8C;--navy:#C9A86A;--navy-hover:#DDBE82;--border:#2B2720;--gold:#C9A86A}
+[data-theme="dark"] .btn-navy{color:#0C0B0A}
+[data-theme="dark"] header,[data-theme="dark"] header.is-scrolled{background:rgba(12,11,10,.92)}
+body{background:var(--bg-main);font-weight:400;letter-spacing:.005em}
+body::before,body::after,.btn-navy::after,.ripple,.confetti,#trail,#ring,#splash{display:none!important}
+.nav-actions .btn{translate:none!important}
+.hero svg{animation:none}
+.product-card:hover,.step:hover,.cat:hover,.btn:hover{transform:none}
+h1,h2,h3,.price-val,.product-title,.logo span{font-family:var(--serif);font-weight:400}
+h1,.hero h1{font-size:clamp(2.5rem,5vw,4.3rem);line-height:1.08;letter-spacing:-.01em}
+.hero h1 em{font-style:italic;color:var(--gold);background:none;-webkit-text-fill-color:currentColor;animation:none}
+.sec h2,.cats h2,#catalog-heading{font-weight:400;letter-spacing:0}
+.logo span{letter-spacing:.2em;font-weight:400}
+header{border-bottom:1px solid var(--border);background:rgba(251,250,247,.94)}
+.nav-links a{font-size:.74rem;text-transform:uppercase;letter-spacing:.16em;font-weight:500}
+.nav-links a::after{background:var(--gold);height:1px}
+.btn,.filter-btn,.a11y-btn{border-radius:0;text-transform:uppercase;letter-spacing:.14em;font-size:.74rem;font-weight:500}
+.btn{transition:background .5s ease,color .5s ease,border-color .5s ease}
+.btn-navy{background:var(--navy);border:1px solid var(--navy)}
+[data-theme="dark"] .btn-navy{background:#C9A86A;border-color:#C9A86A}
+.btn-navy:hover{background:transparent;color:var(--text-main)}
+.btn-outline{background:transparent;border:1px solid var(--text-main);color:var(--text-main)}
+.btn-outline:hover{background:var(--text-main);color:var(--bg-main)}
+.hero{padding-top:clamp(64px,9vw,120px);padding-bottom:clamp(64px,9vw,120px)}
+.hero::before{background:radial-gradient(700px circle at 85% 0%,rgba(168,133,74,.1),transparent 60%)}
+.hero::after{display:none}
+.hero .container>*,.hero-content>*{animation:fadeIn 1.6s ease both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.hero-tag{background:none;border:0;border-bottom:1px solid var(--gold);border-radius:0;padding:0 0 8px;box-shadow:none;text-transform:uppercase;letter-spacing:.2em;font-size:.7rem;color:var(--gold)}
+.hero-tag::before{display:none}
+.trust{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:34px;color:var(--text-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.16em}
+.trust span::before{content:"◆";color:var(--gold);font-size:.55rem;margin-right:10px;vertical-align:middle}
+.engagement-card,.product-card,.dialog-box,.step,.cat,.faq details,.state-box,.thread,#cookieBar,#drawer,.drawer-user{border-radius:2px}
+.engagement-card{box-shadow:none;border:1px solid var(--border);transform:none!important}
+.level-badge{background:none;border:1px solid var(--gold);color:var(--gold);border-radius:0;letter-spacing:.12em;text-transform:uppercase;font-size:.68rem}
+.progress-track{height:2px;border-radius:0}.progress-fill{background:var(--gold);border-radius:0}
+.cats{padding:72px 0 8px}.cats h2{font-size:1.9rem;margin-bottom:22px}
+.cat-grid{counter-reset:c;gap:0;border-top:1px solid var(--border);border-left:1px solid var(--border)}
+.cat{border:0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0;background:transparent;padding:30px 24px;gap:10px;transition:background .6s ease}
+.cat::before{counter-increment:c;content:"0" counter(c);color:var(--gold);font-family:var(--serif);font-size:.85rem;letter-spacing:.2em}
+.cat span{display:none}.cat b{font-family:var(--serif);font-weight:400;font-size:1.35rem}
+.cat:hover{background:var(--bg-alt);box-shadow:none}
+.product-card{border:1px solid var(--border);box-shadow:none;background:var(--bg-main);transition:border-color .6s ease}
+.product-card:hover{border-color:var(--gold);box-shadow:none}
+.product-media img{transition:transform 1.4s cubic-bezier(.22,1,.36,1)}
+.product-card:hover .product-media img{transform:scale(1.04)}
+.badge-top-left{border-radius:0;letter-spacing:.14em;text-transform:uppercase;font-size:.62rem}
+.price-val{font-size:1.3rem}
+.filter-btn{border:1px solid var(--border);background:transparent;color:var(--text-main)}
+.filter-btn[aria-pressed="true"]{background:var(--text-main);color:var(--bg-main);border-color:var(--text-main)}
+.search-input,.sort-select,input,select,textarea{border-radius:0}
+.sec{padding:96px 0}.sec .lead{color:var(--text-muted)}
+.step{background:transparent;box-shadow:none}.step .n{background:none;border:1px solid var(--gold);color:var(--gold);font-family:var(--serif);font-weight:400}
+.faq details{background:transparent}.faq summary{font-family:var(--serif);font-size:1.1rem;font-weight:400}
+#scrollBar{height:2px;background:var(--gold)}
+#toTop{border-radius:0;background:var(--text-main);color:var(--bg-main);box-shadow:none}
+.menu-btn{border-radius:0;background:transparent}
+.drawer-head{background:#14110F;border:0}.drawer-head strong{font-family:var(--serif);font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:1rem}
+.drawer-close{border-radius:0}
+#drawer{border-radius:0}
+.drawer-user{box-shadow:none}.avatar{background:#14110F;border:1px solid var(--gold);color:var(--gold);font-family:var(--serif)}
+.drawer-group h3{letter-spacing:.2em;color:var(--gold)}
+.drawer-item{border-radius:0;font-weight:500}
+.drawer-item .ico{background:none;filter:grayscale(1);opacity:.75;border-radius:0}
+.drawer-item:hover .ico{background:none;color:inherit;transform:none}
+.drawer-item:hover,.drawer-item:focus-visible{padding-left:12px;background:var(--bg-alt)}
+.drawer-item .count,.thread .count{border-radius:0}.drawer-item .count.hot,.menu-btn.unread .dot{animation:none}
+.msg-bubble{animation:none}
+.legal-bar{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em}
+/* ===== KOVA+ v6 : minimalisme noir & blanc ===== */
+:root:not([data-contrast="high"]){--bg-main:#FFFFFF;--bg-alt:#F4F4F4;--text-main:#0A0A0A;--text-muted:#6E6E6E;--navy:#0A0A0A;--navy-hover:#333333;--border:#E3E3E3;--gold:#8A8A8A;--focus-ring:#000000;--success:#0A0A0A;--success-bg:#EDEDED;--serif:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--shadow-md:0 18px 40px rgba(0,0,0,.07)}
+[data-theme="dark"]:not([data-contrast="high"]){--bg-main:#000000;--bg-alt:#111111;--text-main:#F2F2F2;--text-muted:#9A9A9A;--navy:#F2F2F2;--navy-hover:#CFCFCF;--border:#262626;--gold:#8C8C8C;--focus-ring:#FFFFFF;--success:#F2F2F2;--success-bg:#1A1A1A}
+::selection{background:#000;color:#fff}[data-theme="dark"] ::selection{background:#fff;color:#000}
+header,header.is-scrolled{background:rgba(255,255,255,.92)}
+[data-theme="dark"] header,[data-theme="dark"] header.is-scrolled{background:rgba(0,0,0,.9)}
+h1,h2,h3,.price-val,.product-title,.logo span,.cat b,.faq summary{font-weight:300}
+h1,.hero h1{letter-spacing:-.035em}
+.hero h1 em{font-style:normal;color:var(--text-muted)}
+.logo span{font-weight:500;letter-spacing:.12em}
+.hero::before{background:radial-gradient(760px circle at 85% 0%,rgba(0,0,0,.055),transparent 62%)}
+[data-theme="dark"] .hero::before{background:radial-gradient(760px circle at 85% 0%,rgba(255,255,255,.07),transparent 62%)}
+.hero-tag{color:var(--text-muted);border-bottom-color:var(--border)}
+.btn,.filter-btn,.a11y-btn,.nav-links a,.trust,.legal-bar{letter-spacing:.1em}
+[data-theme="dark"] .btn-navy{background:#F2F2F2;border-color:#F2F2F2;color:#000}
+[data-theme="dark"] .btn-navy:hover{background:transparent;color:#F2F2F2}
+.btn-outline{background-image:linear-gradient(var(--text-main),var(--text-main));background-repeat:no-repeat;background-position:left center;background-size:0% 100%;transition:background-size .55s cubic-bezier(.22,1,.36,1),color .55s ease,border-color .5s}
+.btn-outline:hover{background-color:transparent;background-size:100% 100%;color:var(--bg-main)}
+.cat{background:linear-gradient(var(--bg-alt),var(--bg-alt)) no-repeat left bottom/100% 0%;transition:background-size .7s cubic-bezier(.22,1,.36,1)}
+.cat:hover{background-size:100% 100%}
+.product-media{background:var(--bg-alt)}
+.product-media img,.det img{filter:grayscale(1) contrast(1.04);transition:filter 1.1s ease,transform 1.4s cubic-bezier(.22,1,.36,1)}
+.product-card:hover .product-media img{filter:grayscale(0) contrast(1);transform:scale(1.03)}
+.product-card:hover{border-color:var(--text-main)}
+.progress-fill,#scrollBar{background:var(--text-main)}
+.level-badge,.avatar{border-color:var(--text-muted);color:var(--text-main)}
+.drawer-head,.avatar{background:#000}[data-theme="dark"] .drawer-head{background:#111}
+.avatar{color:#fff}
+.drawer-group h3{color:var(--text-muted)}
+.drawer-item .count,.drawer-item .count.hot,.thread .count{background:var(--text-main);color:var(--bg-main)}
+.menu-btn .dot{background:var(--text-main);border-color:var(--bg-main)}
+.step .n{border-color:var(--text-muted);color:var(--text-main)}
+.trust span::before,.cat::before{color:var(--text-muted)}
+#toTop{background:var(--text-main);color:var(--bg-main)}
+/* v6.1 : titres des tuiles catégories */
+.cat b{color:#000;font-weight:500;font-size:1.5rem;letter-spacing:-.01em;margin-bottom:20px}
+.cat small{margin-top:0;padding-top:14px;border-top:1px solid var(--border);align-self:stretch}
+[data-theme="dark"] .cat b{color:#fff}
+/* v6.2 : espacement des tuiles + angles légèrement arrondis */
+:root:not([data-contrast="high"]){--radius:8px}
+.cat-grid{gap:14px;border:0}
+.cat{border:1px solid var(--border);border-radius:10px;padding:34px 26px;gap:0}
+.cat b{margin:16px 0 36px}
+.cat small{padding-top:18px}
+.btn,.filter-btn,.a11y-btn,.search-input,.sort-select,input,select,textarea{border-radius:6px}
+.engagement-card,.product-card,.dialog-box,.step,.faq details,.state-box,.thread,#cookieBar,.drawer-user{border-radius:10px}
+.product-card{overflow:hidden}
+.det img{border-radius:8px}
+.menu-btn,.drawer-close,.drawer-item,#toTop{border-radius:8px}
+#drawer{border-radius:0 14px 14px 0}
+.level-badge,.badge-top-left,.drawer-item .count,.thread .count{border-radius:6px}
+.progress-track,.progress-fill{border-radius:99px}
+.step .n{border-radius:50%}
+/* v6.3 : contenu centré */
+.hero-grid{grid-template-columns:1fr!important;justify-items:center;text-align:center;gap:56px}
+.hero-grid>div:first-child{max-width:760px}
+.hero-grid p{margin-left:auto;margin-right:auto;max-width:620px}
+.hero-buttons,.trust{justify-content:center}
+.engagement-card{width:100%;max-width:560px;margin:0 auto;text-align:left}
+.cats h2,.sec h2,.sec .lead,.sec h3{text-align:center;margin-left:auto;margin-right:auto}
+.cat{align-items:center;text-align:center}
+.cat small{align-self:stretch}
+.steps .step{text-align:center}.step .n{margin-left:auto;margin-right:auto}
+.faq{max-width:820px;margin:0 auto}
+.cform{margin:0 auto}.cform label{text-align:left}
+.toolbar-top{flex-direction:column;align-items:center;text-align:center;gap:16px}
+.search-sort-row{justify-content:center}
+.filters{justify-content:center}
+.products-grid{text-align:left}
+.result-count{text-align:center}
+.footer-row{flex-direction:column;align-items:center;text-align:center;gap:16px}
+
+
+/* KOVA — refonte visuelle : éditoriale, chaleureuse et lisible */
+:root {
+  --bg-main: #fbfaf7;
+  --bg-alt: #f1efe9;
+  --text-main: #20251f;
+  --text-muted: #687067;
+  --navy: #254c3c;
+  --navy-hover: #18392c;
+  --border: #e4e1d8;
+  --focus-ring: #b47742;
+  --success: #276749;
+  --success-bg: #e5f1e8;
+  --radius: 16px;
+  --gold: #b47742;
+  --shadow-soft: 0 12px 36px rgba(32,37,31,.07);
+}
+html { scroll-padding-top: 92px; }
+body { background: var(--bg-main); color: var(--text-main); }
+body::before, body::after { display:none !important; }
+.container { max-width: 1240px; padding-left: 26px; padding-right: 26px; }
+.a11y-bar { background:#f4f1e9; border-color:var(--border); color:var(--text-muted); }
+header { position:sticky; top:0; z-index:1000; background:rgba(251,250,247,.94); border-bottom:1px solid rgba(228,225,216,.9); backdrop-filter:blur(16px); }
+header.is-scrolled { box-shadow:0 8px 26px rgba(32,37,31,.06); }
+.nav-inner { min-height:76px; gap:20px; }
+.logo { color:var(--navy); gap:10px; }
+.logo span { font-family:inherit; font-size:1.2rem; font-weight:800; letter-spacing:.16em; }
+.nav-links { gap:clamp(12px,2vw,28px); }
+.nav-links a { color:#59635a; font-size:.9rem; font-weight:600; }
+.nav-links a:hover,.nav-links a.active { color:var(--navy); }
+.btn { min-height:46px; border-radius:999px; padding:11px 22px; font-weight:700; letter-spacing:.005em; box-shadow:none; }
+.btn-sm { min-height:40px; padding:8px 17px; }
+.btn-navy { background:var(--navy); border-color:var(--navy); color:#fff; }
+.btn-navy:hover { background:var(--navy-hover); border-color:var(--navy-hover); box-shadow:0 8px 20px rgba(37,76,60,.16); }
+.btn-outline { background:transparent; color:var(--navy); border:1px solid #c9d2c9; }
+.btn-outline:hover { background:#edf2ed; border-color:var(--navy); }
+.hero { position:relative; overflow:hidden; padding:clamp(64px,9vw,116px) 0 clamp(58px,8vw,100px); background:linear-gradient(115deg,#f3f1e9 0%,#fbfaf7 58%,#edf2ec 100%); border-bottom:1px solid var(--border); }
+.hero::before { content:""; position:absolute; width:440px; height:440px; right:-130px; top:-220px; border-radius:50%; background:rgba(37,76,60,.07); filter:blur(2px); }
+.hero-grid { position:relative; grid-template-columns:minmax(0,1.25fr) minmax(270px,.75fr); gap:clamp(32px,6vw,82px); }
+.hero-tag { color:var(--navy); background:#e8eee8; border:1px solid #d5e0d5; border-radius:999px; padding:8px 14px; font-size:.72rem; letter-spacing:.13em; }
+.hero h1 { max-width:780px; font-family:Georgia,'Times New Roman',serif; font-size:clamp(2.65rem,5.3vw,5rem); line-height:1.04; letter-spacing:-.045em; font-weight:500; color:#202a22; }
+.hero h1 em { color:var(--navy); font-style:italic; }
+.hero p { max-width:590px; color:#687067; font-size:1.08rem; line-height:1.8; }
+.trust { display:flex; flex-wrap:wrap; gap:10px 18px; margin-top:26px; color:#5f6b61; font-size:.82rem; }
+.trust span::before { content:"✓"; display:inline-grid; place-items:center; width:19px; height:19px; margin-right:7px; border-radius:50%; background:#e1ebe1; color:var(--navy); font-weight:800; }
+.engagement-card { border:1px solid #e3e5dc; background:rgba(255,255,255,.82); border-radius:20px; padding:24px; box-shadow:var(--shadow-soft); }
+.level-badge { background:#e8eee8; color:var(--navy); border-radius:999px; padding:5px 11px; }
+.progress-track { background:#e9ece6; border:0; height:8px; }
+.progress-fill { background:var(--navy); }
+.cats { padding:50px 0 30px; }
+.cats h2,.catalog h2,.sec h2 { font-family:Georgia,'Times New Roman',serif; font-weight:500; letter-spacing:-.025em; color:#26352b; }
+.cat-grid { gap:14px; }
+.cat { min-height:132px; border:1px solid var(--border); border-radius:18px; background:#fff; box-shadow:none; transition:transform .2s ease,border-color .2s ease,background .2s ease; }
+.cat:hover { background:#f3f6f1; border-color:#b9cbbd; transform:translateY(-3px); }
+.cat span { font-size:1.65rem; }
+.cat b { font-size:1rem; color:#2b4635; }
+.cat small { color:var(--text-muted); }
+.catalog { padding:62px 0 88px; border-top:0; }
+.toolbar { gap:22px; }
+.toolbar-top { align-items:flex-end; }
+#catalog-heading { font-family:Georgia,'Times New Roman',serif; font-size:clamp(1.9rem,3vw,2.7rem) !important; font-weight:500 !important; }
+#catalogSub { max-width:720px; line-height:1.7; margin-top:8px; }
+.search-input,.sort-select { min-height:50px; border-radius:13px; border-color:#deded5; background:#fff; padding:12px 16px; }
+.search-input:focus,.sort-select:focus { border-color:var(--navy); outline:3px solid rgba(37,76,60,.12); }
+.filter-btn { min-height:40px; padding:8px 17px; border-radius:999px; background:#fff; border-color:#e0e1d9; }
+.filter-btn[aria-pressed="true"] { background:var(--navy); border-color:var(--navy); }
+.products-grid { grid-template-columns:repeat(auto-fill,minmax(min(100%,245px),1fr)); gap:22px; }
+.product-card { border:1px solid #e7e5dd; border-radius:17px; background:#fff; box-shadow:0 4px 16px rgba(32,37,31,.035); }
+.product-card:hover { border-color:#b8c9bb; box-shadow:0 14px 32px rgba(32,37,31,.09); transform:translateY(-4px); }
+.product-media { background:#f0efe9; aspect-ratio:4/3; }
+.product-media img,.det img { filter:none !important; }
+.product-body { padding:17px 18px 19px; }
+.product-title { font-family:inherit; font-size:1.02rem; font-weight:750; color:#29352d; }
+.product-seller,.product-meta { color:#7a8179; }
+.price-val { color:var(--navy); font-family:inherit; font-weight:800; }
+.fav-btn { border:0; box-shadow:0 3px 12px rgba(0,0,0,.12); }
+.badge-top-left { background:var(--navy); border-radius:999px; }
+.state-box { background:#fff; border:1px dashed #cbd5ca; border-radius:18px; box-shadow:none; }
+.sec { padding:76px 0; }
+.sec .lead { color:var(--text-muted); line-height:1.7; }
+.step,.faq details,.thread,.dialog-box,.state-box { border-radius:16px; }
+.step { background:#fff; border:1px solid var(--border); box-shadow:none; }
+.step .n { background:#e8eee8; color:var(--navy); border-radius:50%; }
+.faq details { background:#fff; border:1px solid var(--border); padding:18px 20px; margin:10px 0; }
+.faq summary { color:#2a3d30; font-family:inherit; font-weight:700; }
+.cform { max-width:650px; }
+.cform input,.cform textarea { width:100%; border:1px solid #deded5; border-radius:12px; padding:13px 15px; font:inherit; background:#fff; color:var(--text-main); }
+.cform label { display:block; margin:14px 0; font-weight:650; color:#3e4a40; }
+footer { background:#203c30; color:#f8f7f1; padding:40px 0; }
+footer a { color:#f8f7f1; }
+#drawer { background:rgba(251,250,247,.97); }
+.drawer-head { background:var(--navy); }
+.drawer-item:hover,.drawer-item:focus-visible { background:#e9efe9; }
+.overlay { backdrop-filter:blur(5px); }
+.dialog-box { border:1px solid var(--border); box-shadow:0 24px 80px rgba(0,0,0,.2); }
+.toast { border-radius:999px; background:#203c30; }
+#toTop { background:var(--navy); }
+@media (max-width:900px) {
+  .container { padding-left:20px; padding-right:20px; }
+  .hero-grid { grid-template-columns:1fr !important; justify-items:start; text-align:left; gap:32px; }
+  .hero-grid>div:first-child { max-width:760px; }
+  .hero p { margin-left:0; margin-right:0; }
+  .hero-buttons,.trust { justify-content:flex-start; }
+  .engagement-card { width:100%; max-width:600px; }
+  .nav-links { display:none; }
+}
+@media (max-width:540px) {
+  .container { padding-left:16px; padding-right:16px; }
+  .a11y-hint { display:none; }
+  .nav-inner { min-height:66px; }
+  .nav-actions { gap:7px; }
+  .nav-actions .btn { padding:8px 12px; font-size:.78rem; }
+  .hero { padding:56px 0 50px; }
+  .hero h1 { font-size:clamp(2.45rem,12vw,3.4rem); }
+  .hero p { font-size:1rem; }
+  .hero-buttons { display:grid; grid-template-columns:1fr; }
+  .hero-buttons .btn { width:100%; }
+  .cats { padding:38px 0 18px; }
+  .cat-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .cat { min-height:116px; }
+  .catalog { padding:42px 0 62px; }
+  .search-sort-row { display:grid; grid-template-columns:1fr; }
+  .search-input-wrap { min-width:0; }
+  .sort-select { width:100%; }
+  .products-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; }
+  .product-body { padding:12px; }
+  .product-title { font-size:.92rem; }
+  .product-seller { font-size:.76rem; margin-bottom:10px; }
+  .price-val { font-size:1.05rem; }
+  .card-actions { grid-template-columns:1fr; }
+  .card-actions .btn { min-height:38px; padding:7px 10px; font-size:.78rem; }
+  .sec { padding:54px 0; }
+}
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+
+
+/* KOVA+ abonnements et assistant de bonnes affaires */
+.kova-growth{padding:76px 0;background:linear-gradient(145deg,var(--bg-alt),var(--bg-main))}
+.kova-growth .lead{max-width:760px;color:var(--text-muted);margin:10px 0 30px}
+.ai-panel{background:var(--bg-main);border:1px solid var(--border);border-radius:22px;padding:clamp(20px,4vw,34px);box-shadow:0 18px 55px rgba(15,30,54,.08);margin:28px 0 54px}
+.ai-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.ai-kicker{display:inline-flex;gap:8px;align-items:center;border-radius:99px;padding:6px 12px;background:var(--success-bg);color:var(--success);font-size:.78rem;font-weight:800}
+.ai-question-row{display:flex;gap:10px;margin-top:22px}
+.ai-question-row input{flex:1;min-width:0;border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--bg-main);color:var(--text-main);font:inherit}
+.ai-usage{font-size:.88rem;color:var(--text-muted);margin-top:12px}
+.ai-results{display:grid;gap:12px;margin-top:20px}
+.ai-result{display:grid;grid-template-columns:84px 1fr auto;gap:14px;align-items:center;border:1px solid var(--border);border-radius:14px;padding:12px}
+.ai-result img,.ai-placeholder{width:84px;height:78px;object-fit:cover;border-radius:10px;background:var(--bg-alt);display:grid;place-items:center}
+.ai-result p{font-size:.88rem;color:var(--text-muted);margin-top:3px}
+.ai-price{font-weight:850;white-space:nowrap}
+.ai-note{font-size:.8rem;color:var(--text-muted);margin-top:16px}
+.plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:28px}
+.plan-card{background:var(--bg-main);border:1px solid var(--border);border-radius:20px;padding:24px;display:flex;flex-direction:column;position:relative}
+.plan-card.featured{border:2px solid var(--navy);box-shadow:0 15px 40px rgba(15,30,54,.1)}
+.plan-card h3{font-size:1.25rem}
+.plan-price{font-size:2rem;font-weight:900;margin:12px 0 2px;letter-spacing:-1px}
+.plan-price small{font-size:.85rem;font-weight:500;color:var(--text-muted);letter-spacing:0}
+.plan-card ul{list-style:none;display:grid;gap:10px;margin:20px 0 24px;flex:1}
+.plan-card li:before{content:'✓';font-weight:900;color:var(--success);margin-right:9px}
+.plan-label{position:absolute;right:16px;top:16px;font-size:.7rem;font-weight:800;background:var(--bg-alt);padding:5px 9px;border-radius:99px}
+.plan-status{font-size:.82rem;color:var(--text-muted);margin-top:12px}
+.plan-card .btn[aria-pressed="true"]{background:var(--success);color:white;border-color:var(--success)}
+@media(max-width:760px){.plan-grid{grid-template-columns:1fr}.ai-question-row{flex-direction:column}.ai-result{grid-template-columns:64px 1fr}.ai-result img,.ai-placeholder{width:64px;height:64px}.ai-price{grid-column:2}}
+
+
+/* Onglet autonome KOVA Intelligence */
+.nav-links a.nav-ai-link{color:var(--navy);font-weight:800}
+.nav-links a.nav-ai-link::before{content:"✦";margin-right:6px;color:var(--navy)}
+#kova-intelligence{scroll-margin-top:100px;padding-top:clamp(54px,7vw,90px);padding-bottom:clamp(54px,7vw,90px)}
+#kova-intelligence .ai-panel{max-width:900px;margin:34px auto 0}
+#kova-intelligence .ai-head{align-items:center}
+#kova-intelligence .ai-question-row input{min-width:0}
+#kova-plus{scroll-margin-top:100px}
+
+</style>
+<meta name="description" content="KOVA, la place de marché d'achat-revente entre particuliers : publiez, recherchez et échangez des objets simplement."><meta name="theme-color" content="#000000"><meta property="og:type" content="website"><meta property="og:title" content="KOVA — Achat-revente entre particuliers"><meta property="og:description" content="KOVA, la place de marché d'achat-revente entre particuliers : publiez, recherchez et échangez des objets simplement."><meta name="twitter:card" content="summary"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0A0A'/%3E%3Ctext x='32' y='44' font-size='34' font-weight='800' text-anchor='middle' fill='white' font-family='Arial'%3EK%3C/text%3E%3C/svg%3E"><script>try{var t=localStorage.getItem('kova_theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+/* KOVA — navigation professionnelle */
+#drawer{width:382px;max-width:min(90vw,382px);background:var(--bg-main);border-right:1px solid var(--border);border-radius:0 18px 18px 0;box-shadow:0 22px 70px rgba(15,30,54,.20);backdrop-filter:none}
+.drawer-head{min-height:88px;padding:18px 22px;background:var(--navy);color:#fff;border:0;display:flex;align-items:center;position:sticky;top:0}
+.drawer-brand{display:flex;align-items:center;gap:12px}
+.drawer-brand-mark{width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.42);border-radius:11px;color:#fff;font-weight:800;font-size:1.2rem;letter-spacing:-.06em}
+.drawer-brand small{display:block;margin-bottom:3px;font-size:.61rem;letter-spacing:.19em;font-weight:700;opacity:.72}
+.drawer-head .drawer-brand strong{display:block;color:#fff;font-size:1.08rem;letter-spacing:-.025em;font-weight:750;text-transform:none;font-family:inherit}
+.drawer-close{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.24);color:#fff;font-size:1rem}
+.drawer-close:hover{transform:none;background:rgba(255,255,255,.2)}
+.drawer-user{margin:16px 18px 4px;padding:13px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;box-shadow:none;color:var(--text-main)}
+.drawer-user .avatar{width:40px;height:40px;flex:0 0 40px;border-radius:10px;background:var(--navy);color:#fff;border:0;font-family:inherit;font-weight:750}
+.drawer-user b{font-size:.91rem;font-weight:750}.drawer-user small{font-size:.76rem;color:var(--text-muted)}
+.drawer-user #dPts{font-size:.78rem;font-weight:750;color:var(--navy)}
+.drawer-group{padding:15px 18px 4px}
+.drawer-group h3{margin:0 0 8px;padding:0 2px;display:flex;align-items:center;gap:9px;font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:var(--text-muted)}
+.drawer-group h3:after{content:"";height:1px;flex:1;background:var(--border)}
+.drawer-item{min-height:43px;padding:6px 9px;border-radius:9px;gap:11px;font-size:.88rem;font-weight:600;color:var(--text-main);opacity:0;transform:translateX(-8px);transition:background .18s,color .18s,opacity .3s,transform .3s}
+#drawer.open .drawer-item{opacity:1;transform:none;transition:opacity .28s ease calc(var(--i)*18ms + 60ms),transform .28s ease calc(var(--i)*18ms + 60ms),background .18s,color .18s}
+.drawer-item .ico{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;border-radius:8px;background:var(--bg-alt);color:var(--navy);font-size:.9rem;font-weight:750;filter:none;opacity:1}
+.drawer-item:hover .ico{background:var(--navy);color:#fff;transform:none}
+.drawer-item:hover,.drawer-item:focus-visible{padding-left:9px;background:var(--bg-alt);color:var(--navy);outline:none}
+.drawer-item:focus-visible{box-shadow:0 0 0 2px var(--navy)}
+.drawer-item kbd{font-size:.65rem;border-radius:5px;background:var(--bg-main)}
+.drawer-item .count{font-size:.68rem;border-radius:6px;background:var(--navy);padding:2px 7px}
+.drawer-foot{margin-top:14px;padding:15px 20px 18px;border-top:1px solid var(--border);font-size:.7rem;line-height:2;color:var(--text-muted)}
+.drawer-foot-title{display:block;margin-bottom:4px;font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--text-main)}
+#drawerBackdrop{background:rgba(12,22,36,.48);backdrop-filter:blur(2px)}
+[data-theme="dark"] #drawer{background:var(--bg-main);border-color:var(--border)}
+[data-theme="dark"] .drawer-user{background:var(--bg-alt)}
+[data-theme="dark"] .drawer-item .ico{background:rgba(255,255,255,.07);color:var(--text-main)}
+[data-theme="dark"] .drawer-item:hover .ico{background:var(--navy);color:#fff}
+[data-theme="dark"] .drawer-item:hover{background:var(--bg-alt);color:var(--text-main)}
+@media(max-width:540px){#drawer{width:min(88vw,360px);border-radius:0 14px 14px 0}.drawer-head{min-height:78px;padding:15px 17px}.drawer-group{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+
+    <a href="#main-content" class="skip-link">Aller directement au contenu principal</a>
+
+    <!-- Barre d'accessibilité universelle (WCAG AAA) -->
+    <div class="a11y-bar" role="region" aria-label="Outils d'accessibilité">
+        <div class="container a11y-inner">
+            <span class="a11y-hint">Un affichage à votre mesure.</span>
+            <details class="a11y-settings" id="displaySettings">
+                <summary>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="var(--bg-alt)"/><circle cx="15" cy="17" r="3" fill="var(--bg-alt)"/></svg>
+                    Personnaliser
+                    <svg class="settings-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
+                </summary>
+                <div class="a11y-controls" role="group" aria-label="Réglages d’affichage">
+                    <button type="button" class="a11y-btn" id="btnTextNormal" aria-pressed="true" onclick="setFontScale(1)">Texte Normal</button>
+                    <button type="button" class="a11y-btn" id="btnTextLarge" aria-pressed="false" onclick="setFontScale(1.15)">Texte Grand (A+)</button>
+                    <button type="button" class="a11y-btn" id="btnContrast" aria-pressed="false" onclick="toggleContrast()">Contraste Élevé</button>
+                    <button type="button" class="a11y-btn" id="btnMotion" aria-pressed="false" onclick="toggleMotion()">Réduire animations</button>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <header>
+        <div class="container nav-inner">
+            <button type="button" class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu (messages non lus signalés)" aria-controls="drawer" aria-expanded="false"><span></span><span></span><span></span><i class="dot"></i></button>
+            <a href="#" class="logo" aria-label="KOVA Accueil"><svg width="32" height="22" viewBox="0 0 64 44" fill="none" aria-hidden="true"><circle cx="22" cy="22" r="18" stroke="currentColor" stroke-width="4.5"/><circle cx="42" cy="22" r="18" stroke="currentColor" stroke-width="4.5"/><path d="M22 8V36M22 22L38 8M22 22L40 36" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>KOVA.</span></a>
+
+            <nav aria-label="Navigation principale">
+                <ul class="nav-links">
+                    <li><a href="#catalogue">Annonces réelles</a></li>
+                    <li><a href="#kova-intelligence" class="nav-ai-link">✦ KOVA IA</a></li>
+                    <li><a href="#kova-plus">Abonnements</a></li>
+                    <li><a href="#missions">Vos récompenses</a></li>
+                    <li><a href="#comment-ca-marche">Aide</a></li><li><a href="#faq">FAQ</a></li><li><a href="#footer">Base de données</a></li>
+                </ul>
+            </nav>
+
+            <div class="nav-actions">
+                <a class="streak-pill" href="#missions" onclick="document.getElementById('missionDetails').open = true" aria-label="Voir mes points et mon niveau" id="pointsLink">
+                    <span aria-hidden="true">★</span>
+                    <span id="navPoints">0 pts</span>
+                </a>
+                <button type="button" class="btn btn-outline btn-sm" id="btnAuth" onclick="openModal('modalAuth')">Connexion</button>
+                <button type="button" class="btn btn-navy btn-sm" onclick="handleSellClick()">+ Vendre</button>
+            </div>
+        </div>
+    </header>
+<div id="scrollBar" aria-hidden="true"></div>
+<div id="drawerBackdrop" aria-hidden="true"></div>
+<aside id="drawer" aria-label="Menu et raccourcis" aria-hidden="true" tabindex="-1">
+  <div class="drawer-head"><div class="drawer-brand"><span class="drawer-brand-mark">K</span><span><small>ESPACE KOVA</small><strong>Navigation</strong></span></div><button type="button" class="drawer-close" id="drawerClose" aria-label="Fermer le menu">✕</button></div>
+  <div class="drawer-user"><span class="avatar" id="dAvatar">?</span><span><b id="dUser">Visiteur</b><br><small id="dLevel">Connectez-vous pour gagner des points</small></span><span id="dPts" aria-hidden="true">★ 0</span></div>
+  <div class="drawer-group"><h3>Découvrir KOVA</h3>
+    <a class="drawer-item" style="--i:0" href="#main-content" data-go><span class="ico">⌂</span>Accueil</a>
+    <a class="drawer-item" style="--i:1" href="#catalogue" data-go><span class="ico">▤</span>Annonces</a>
+    <a class="drawer-item" style="--i:2" href="#kova-intelligence" data-go><span class="ico">✧</span>KOVA Intelligence</a>
+    <a class="drawer-item" style="--i:3" href="#kova-plus" data-go><span class="ico">＋</span>Offres KOVA+</a>
+    <a class="drawer-item" style="--i:4" href="#missions" data-go data-open="missionDetails"><span class="ico">◇</span>Mes récompenses</a>
+    <a class="drawer-item" style="--i:2" href="#comment-ca-marche" data-go><span class="ico">i</span>Comment ça marche</a>
+    <a class="drawer-item" style="--i:2" href="#faq" data-go><span class="ico">?</span>Centre d’aide</a>
+    <a class="drawer-item" style="--i:2" href="#contact" data-go><span class="ico">↗</span>Contact</a>
+  </div>
+  <div class="drawer-group"><h3>Mon espace</h3>
+    <button type="button" class="drawer-item" style="--i:3" data-act="sell"><span class="ico">＋</span>Déposer une annonce<kbd>N</kbd></button>
+    <button type="button" class="drawer-item" style="--i:3" data-act="inbox"><span class="ico">▱</span>Messagerie<span class="count" id="dInbox">0</span></button>
+    <button type="button" class="drawer-item" style="--i:4" data-act="search"><span class="ico">⌕</span>Rechercher<kbd>/</kbd></button>
+    <button type="button" class="drawer-item" style="--i:5" data-act="favs"><span class="ico">♡</span>Favoris<span class="count" id="dFav">0</span></button>
+    <button type="button" class="drawer-item" style="--i:6" data-act="auth"><span class="ico">◉</span><span id="dAuth">Connexion</span></button>
+  </div>
+  <div class="drawer-group"><h3>Explorer par catégorie</h3>
+    <button type="button" class="drawer-item" style="--i:7" data-cat="all"><span class="ico">▦</span>Toutes les catégories</button>
+    <button type="button" class="drawer-item" style="--i:8" data-cat="Mode"><span class="ico">M</span>Mode</button>
+    <button type="button" class="drawer-item" style="--i:9" data-cat="Design"><span class="ico">D</span>Design</button>
+    <button type="button" class="drawer-item" style="--i:10" data-cat="Tech"><span class="ico">T</span>Tech</button>
+    <button type="button" class="drawer-item" style="--i:11" data-cat="Maison"><span class="ico">H</span>Maison</button>
+  </div>
+  <div class="drawer-group"><h3>Préférences</h3>
+    <button type="button" class="drawer-item" style="--i:12" data-act="text"><span class="ico">A+</span>Agrandir le texte</button>
+    <button type="button" class="drawer-item" style="--i:13" data-act="contrast"><span class="ico">◐</span>Contraste élevé</button>
+    <button type="button" class="drawer-item" style="--i:14" data-act="motion"><span class="ico">Ⅱ</span>Réduire les animations</button>
+    <button type="button" class="drawer-item" style="--i:14" data-act="theme"><span class="ico">◐</span>Apparence</button>
+    <button type="button" class="drawer-item" style="--i:15" data-act="db"><span class="ico">▧</span>État de la base de données</button>
+  </div>
+  <p class="drawer-foot kbd-tip"><span class="drawer-foot-title">Raccourcis clavier</span>Raccourcis : <kbd>M</kbd> menu · <kbd>/</kbd> recherche · <kbd>N</kbd> vendre · <kbd>I</kbd> messages · <kbd>F</kbd> favoris · <kbd>Échap</kbd> fermer</p>
+</aside>
+<div class="overlay" id="modalInbox" role="dialog" aria-modal="true" aria-labelledby="inboxTitle">
+  <div class="dialog-box">
+    <div class="dialog-head"><div><h3 id="inboxTitle">Ma messagerie</h3><p id="inboxSub" style="font-size:.85rem;color:var(--text-muted)"></p></div>
+    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('modalInbox')">Fermer</button></div>
+    <div id="inboxList" aria-live="polite"></div>
+  </div>
+</div>
+<button type="button" id="toTop" aria-label="Revenir en haut de page">↑</button>
+
+    <main id="main-content">
+        <!-- Section Hero -->
+        <section class="hero">
+            <div class="container hero-grid">
+                <div>
+                    <span class="hero-tag" data-reveal>La seconde main, simplement</span>
+                    <h1 data-reveal style="--reveal-delay: 50ms;">Achetez, négociez et revendez <em>en toute clarté.</em></h1>
+                    <p data-reveal style="--reveal-delay: 90ms;">Une plateforme minimaliste conçue pour tout le monde. Connectez-vous par email, débloquez votre fil personnalisé et négociez directement avec les vendeurs.</p>
+                    <div class="hero-buttons" data-reveal style="--reveal-delay: 130ms;">
+                        <a class="btn btn-navy" id="heroPrimaryBtn" href="#catalogue">Voir les annonces</a>
+                        <button type="button" class="btn btn-outline" onclick="handleSellClick()">Déposer une annonce</button>
+                    </div>
+<div class="trust" data-reveal><span>Catalogue communautaire</span><span>Messagerie intégrée</span><span>Navigation publique</span></div>
+                </div>
+
+                <!-- Tableau de bord interactif & addictif -->
+                <aside class="engagement-card" id="missions" aria-labelledby="progress-title" tabindex="-1" data-reveal style="--reveal-delay: 100ms;">
+                    <div class="engagement-header">
+                        <h2 id="progress-title">Votre progression</h2>
+                        <span class="level-badge" id="levelBadge">Niveau 1</span>
+                    </div>
+                    <p id="progressSubtitle">Complétez votre profil et échangez pour progresser.</p>
+                    <div class="progress-track" role="progressbar" aria-label="Progression du compte" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <details class="mission-details" id="missionDetails">
+                        <summary>Comment gagner des points</summary>
+                        <ul class="mission-list" id="missionList">
+                            <li class="mission-item" id="m-login">
+                                <span>1. Créer un profil (Email)</span>
+                                <strong>+50 pts</strong>
+                            </li>
+                            <li class="mission-item" id="m-fav">
+                                <span>2. Sauvegarder un article en favori</span>
+                                <strong>+30 pts</strong>
+                            </li>
+                            <li class="mission-item" id="m-offer">
+                                <span>3. Faire une offre ou publier</span>
+                                <strong>+70 pts</strong>
+                            </li>
+                        </ul>
+                    </details>
+                </aside>
+            </div>
+        </section>
+
+        <section class="cats"><div class="container"><h2 data-reveal>Parcourir par catégorie</h2><div class="cat-grid"><button type="button" class="cat" data-cat="Mode" data-reveal><span aria-hidden="true">👕</span><b>Mode</b><small>Vêtements & accessoires</small></button><button type="button" class="cat" data-cat="Design" data-reveal><span aria-hidden="true">🎨</span><b>Design</b><small>Objets & créations</small></button><button type="button" class="cat" data-cat="Tech" data-reveal><span aria-hidden="true">💻</span><b>Tech</b><small>Électronique & gadgets</small></button><button type="button" class="cat" data-cat="Maison" data-reveal><span aria-hidden="true">🛋️</span><b>Maison</b><small>Déco & mobilier</small></button></div></div></section>
+<!-- Catalogue dynamique -->
+        <section id="catalogue" class="catalog" aria-labelledby="catalog-heading">
+            <div class="container">
+                <div class="toolbar">
+                    <div class="toolbar-top" data-reveal>
+                        <div>
+                            <h2 id="catalog-heading" style="font-size: 1.9rem; font-weight: 800;">Annonces de la communauté</h2>
+                            <p style="color: var(--text-muted); font-size: 0.95rem;" id="catalogSub">Consultez les annonces publiques. La connexion est nécessaire uniquement pour contacter un vendeur, publier ou enregistrer vos favoris.</p>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" id="btnFavFilter" aria-pressed="false" onclick="toggleFavOnly()">
+                            ♥ Mes favoris (<span id="favCount">0</span>)
+                        </button>
+                    </div>
+
+                    <div class="search-sort-row" data-reveal>
+                        <div class="search-input-wrap">
+                            <label for="searchInput" class="sr-only">Rechercher un article</label>
+                            <input type="search" id="searchInput" class="search-input" placeholder="Rechercher par mot-clé (ex: montre, veste, lampe...)" oninput="renderCatalog()">
+                        </div>
+                        <div>
+                            <label for="sortSelect" class="sr-only">Trier les annonces</label>
+                            <select id="sortSelect" class="sort-select" onchange="renderCatalog()">
+                                <option value="recommended">Tri : Recommandés pour vous</option>
+                                <option value="newest">Tri : Plus récents</option>
+                                <option value="price-asc">Prix : Croissant</option>
+                                <option value="price-desc">Prix : Décroissant</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filters" role="group" aria-label="Filtrer par catégorie" data-reveal>
+                        <button type="button" class="filter-btn" data-cat="all" aria-pressed="true" onclick="setCategory('all', this)">Tout</button>
+                        <button type="button" class="filter-btn" data-cat="Mode" aria-pressed="false" onclick="setCategory('Mode', this)">Mode</button>
+                        <button type="button" class="filter-btn" data-cat="Design" aria-pressed="false" onclick="setCategory('Design', this)">Design</button>
+                        <button type="button" class="filter-btn" data-cat="Tech" aria-pressed="false" onclick="setCategory('Tech', this)">Tech</button>
+                        <button type="button" class="filter-btn" data-cat="Maison" aria-pressed="false" onclick="setCategory('Maison', this)">Maison</button>
+                    </div>
+                </div>
+
+                <!-- Contenu dynamique du catalogue -->
+                <div id="catalogContainer" aria-live="polite"></div>
+            </div>
+        </section>
+
+<section id="kova-intelligence" class="kova-growth">
+ <div class="container">
+  <span class="ai-kicker">✦ KOVA INTELLIGENCE</span>
+  <h2 style="font-size:clamp(1.8rem,4vw,2.5rem);margin-top:12px">Trouvez les meilleures affaires.</h2>
+  <p class="lead">Décrivez ce que vous cherchez : l’assistant compare les annonces disponibles, repère les prix intéressants et vous explique ses recommandations.</p>
+  <div class="ai-panel">
+   <div class="ai-head">
+    <div><span class="ai-kicker">Assistant bonnes affaires · Bêta</span><h3 style="font-size:1.45rem;margin-top:10px">Que recherchez-vous ?</h3><p style="color:var(--text-muted)">Ex. « un ordinateur en bon état à moins de 300 € » ou « les meilleures affaires en mode ».</p></div>
+    <strong id="aiPlanBadge" class="level-badge">Offre gratuite</strong>
+   </div>
+   <form id="aiForm">
+    <div class="ai-question-row"><input id="aiQuestion" maxlength="240" placeholder="Posez votre question sur les annonces KOVA…" required aria-label="Votre recherche"><button class="btn btn-navy" type="submit" id="aiSubmit">Analyser</button></div>
+   </form>
+   <p class="ai-usage" id="aiUsage" aria-live="polite">3 analyses gratuites par mois.</p>
+   <div id="aiOutput" class="ai-results" aria-live="polite"></div>
+   <p class="ai-note">Transparence : cette version utilise un moteur de classement local basé sur les annonces et leurs prix. Elle ne consulte pas Internet et ne vérifie pas l’état réel des objets. L’assistant génératif connecté à un modèle d’IA sera activé avec le backend.</p>
+  </div>
+ </div>
+</section>
+
+<section id="kova-plus" class="kova-growth kova-plans-section">
+ <div class="container">
+  <div style="text-align:center"><span class="ai-kicker">LES ABONNEMENTS KOVA+</span><h2 style="margin-top:12px">Choisissez votre niveau.</h2><p class="lead" style="margin:8px auto 0">Commencez gratuitement, puis débloquez plus d’analyses lorsque vous en avez besoin.</p></div>
+  <div class="plan-grid">
+   <article class="plan-card" data-plan-card="free"><h3>Découverte</h3><div class="plan-price">0 € <small>/ mois</small></div><p style="color:var(--text-muted)">Pour découvrir KOVA.</p><ul><li>3 analyses IA par mois</li><li>Recherche et filtres classiques</li><li>Accès aux annonces publiques</li></ul><button class="btn btn-outline" type="button" data-plan="free">Offre gratuite</button></article>
+   <article class="plan-card featured" data-plan-card="plus"><span class="plan-label">Populaire</span><h3>KOVA+ Plus</h3><div class="plan-price">4,99 € <small>/ mois</small></div><p style="color:var(--text-muted)">Pour les acheteurs réguliers.</p><ul><li>30 analyses IA par mois</li><li>Comparaison des prix par catégorie</li><li>Alertes de bonnes affaires (à activer)</li><li>Historique des analyses (à activer)</li></ul><button class="btn btn-navy" type="button" data-plan="plus">Découvrir Plus</button></article>
+   <article class="plan-card" data-plan-card="pro"><h3>KOVA+ Premium</h3><div class="plan-price">9,99 € <small>/ mois</small></div><p style="color:var(--text-muted)">Pour les passionnés de bonnes affaires.</p><ul><li>Analyses IA illimitées*</li><li>Comparaison avancée des annonces</li><li>Alertes prioritaires (à activer)</li><li>Historique et recommandations (à activer)</li></ul><button class="btn btn-outline" type="button" data-plan="pro">Découvrir Premium</button></article>
+  </div>
+  <p class="plan-status" id="planStatus" aria-live="polite">Mode démonstration : les offres peuvent être testées, aucun paiement n’est effectué.</p>
+ </div>
+</section>
+
+    <section id="comment-ca-marche" class="sec"><div class="container">
+<h2 data-reveal>Comment ça marche</h2><p class="lead" data-reveal>Trois étapes pour acheter ou vendre entre particuliers.</p>
+<div class="steps">
+<div class="step" data-reveal><div class="n">1</div><h3>Créez votre profil</h3><p>Connectez-vous et choisissez vos centres d'intérêt pour recevoir des annonces adaptées.</p></div>
+<div class="step" data-reveal><div class="n">2</div><h3>Publiez ou cherchez</h3><p>Déposez un objet en quelques champs, ou filtrez le catalogue par catégorie, mot-clé et prix.</p></div>
+<div class="step" data-reveal><div class="n">3</div><h3>Échangez</h3><p>Posez vos questions, faites une offre et convenez d'une remise en main propre.</p></div>
+</div>
+<h3 style="margin:36px 0 10px" data-reveal>Nos conseils de sécurité</h3>
+<div class="steps">
+<div class="step" data-reveal><h3>Lieu public</h3><p>Donnez rendez-vous dans un endroit fréquenté pour la remise de l'objet.</p></div>
+<div class="step" data-reveal><h3>Pas de paiement à l'aveugle</h3><p>Évitez les virements à un inconnu avant d'avoir vu l'objet.</p></div>
+<div class="step" data-reveal><h3>Un doute ?</h3><p>Utilisez « Signaler » dans la fiche de l'annonce.</p></div>
+</div></div></section>
+<section id="faq" class="sec" style="background:var(--bg-alt)"><div class="container faq">
+<h2 data-reveal>Questions fréquentes</h2><p class="lead" data-reveal>Les réponses aux questions les plus courantes.</p>
+<details data-reveal><summary>Comment publier une annonce ?</summary><p>Connectez-vous, cliquez sur « + Vendre », renseignez le titre, la catégorie, l'état, le prix et une photo si vous le souhaitez.</p></details>
+<details data-reveal><summary>Comment contacter un vendeur ?</summary><p>Sur une annonce, cliquez sur « Contacter » ou « Faire une offre ». Retrouvez ensuite vos conversations dans la messagerie du menu.</p></details>
+<details data-reveal><summary>Mes messages sont-ils privés ?</summary><p>Les discussions sont rattachées à une annonce et visibles par ses participants. N'y partagez pas d'informations sensibles.</p></details>
+<details data-reveal><summary>KOVA gère-t-il les paiements ?</summary><p>Pas encore. Cette version met les acheteurs et vendeurs en relation ; le paiement et la remise de l'objet sont convenus directement entre membres.</p></details>
+<details data-reveal><summary>À quoi servent les points ?</summary><p>Ils récompensent vos actions (connexion, favoris, première annonce) et font évoluer votre niveau.</p></details>
+<details data-reveal><summary>Comment signaler une annonce suspecte ?</summary><p>Ouvrez la fiche de l'annonce en cliquant sur sa photo ou son titre, puis sur « Signaler ».</p></details>
+</div></section>
+<section id="contact" class="sec"><div class="container"><h2 data-reveal>Nous contacter</h2><p class="lead" data-reveal>Une question, une suggestion ? Écrivez-nous.</p>
+<form class="cform" id="contactForm" data-reveal><label>Votre nom<input id="cName" required autocomplete="name"></label><label>Votre message<textarea id="cMsg" rows="4" required></textarea></label><button class="btn btn-navy" type="submit">Envoyer par e-mail</button></form></div></section>
+</main>
+
+    <footer id="footer">
+        <div class="container footer-row" data-reveal>
+            <div>
+                <strong>KOVA.</strong> — Marketplace d'achat-revente entre particuliers.
+                <small style="display:block;color:var(--text-muted);margin-top:6px">Version de lancement : mise en relation uniquement, paiement intégré non activé.</small>
+            </div>
+        </div>
+    </footer>
+<div class="legal-bar"><span>© <span id="yr"></span> KOVA</span><button class="lk" data-legal="mentions">Mentions légales</button><button class="lk" data-legal="cgu">CGU</button><button class="lk" data-legal="privacy">Confidentialité</button><button class="lk" data-legal="cookies">Cookies</button></div>
+<div class="overlay" id="modalInfo" role="dialog" aria-modal="true" aria-labelledby="infoTitle"><div class="dialog-box"><div class="dialog-head"><h3 id="infoTitle"></h3><button type="button" class="btn btn-outline btn-sm" onclick="closeModal('modalInfo')">Fermer</button></div><div id="infoBody"></div></div></div>
+<div id="cookieBar" role="region" aria-label="Information stockage" hidden><p>KOVA n'utilise aucun cookie publicitaire. Vos préférences, favoris et messages sont enregistrés dans votre navigateur.</p><div class="row"><button class="btn btn-navy btn-sm" id="ckOk" type="button">J'ai compris</button><button class="btn btn-outline btn-sm" type="button" data-legal="cookies">En savoir plus</button></div></div>
+
+
+    <!-- MODALE 1 : Connexion & Profil d'intérêts -->
+    <div class="overlay" id="modalAuth" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <div class="dialog-box">
+            <div class="dialog-head">
+                <h3 id="authTitle">Connexion rapide</h3>
+                <button type="button" class="close-btn" onclick="closeModal('modalAuth')" aria-label="Fermer la fenêtre">&times;</button>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-field auth-mode-field">
+                    <label for="authMode">Accès à votre compte</label>
+                    <select id="authMode">
+                        <option value="login">J'ai déjà un compte</option>
+                        <option value="signup">Créer un compte KOVA</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="authIdentifier">Adresse e-mail</label>
+                    <input type="email" id="authIdentifier" placeholder="vous@exemple.fr" autocomplete="email" required>
+                </div>
+                <div class="form-field">
+                    <label for="authPassword">Mot de passe</label>
+                    <input type="password" id="authPassword" minlength="8" autocomplete="current-password" required>
+                </div>
+                <div id="authProfileFields" hidden>
+                    <div class="form-field">
+                        <label for="authName">Pseudo public</label>
+                        <input type="text" id="authName" placeholder="Choisissez votre pseudo" autocomplete="nickname">
+                    </div>
+                    <fieldset class="form-field auth-interests" style="border: none;">
+                        <legend>Vos préférences</legend>
+                        <p class="auth-help">Elles seront enregistrées sur votre compte et conservées lors de vos prochaines connexions.</p>
+                        <div class="interest-grid">
+                            <label class="interest-check"><input type="checkbox" name="interests" value="Mode" checked> Mode</label>
+                            <label class="interest-check"><input type="checkbox" name="interests" value="Tech" checked> Tech</label>
+                            <label class="interest-check"><input type="checkbox" name="interests" value="Design"> Design</label>
+                            <label class="interest-check"><input type="checkbox" name="interests" value="Maison"> Maison</label>
+                        </div>
+                    </fieldset>
+                </div>
+                <button type="submit" id="authSubmit" class="btn btn-navy" style="width: 100%;">Me connecter</button>
+                <p class="auth-switch-hint" id="authSwitchHint">Nouveau sur KOVA ? Choisissez « Créer un compte KOVA » ci-dessus.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE 2 : Publier une vraie annonce -->
+    <div class="overlay" id="modalSell" role="dialog" aria-modal="true" aria-labelledby="sellTitle">
+        <div class="dialog-box">
+            <div class="dialog-head">
+                <h3 id="sellTitle">Déposer une annonce réelle</h3>
+                <button type="button" class="close-btn" onclick="closeModal('modalSell')" aria-label="Fermer la fenêtre">&times;</button>
+            </div>
+            <form onsubmit="handleCreateListing(event)">
+                <div class="form-field">
+                    <label for="itemTitle">Titre de l'article</label>
+                    <input type="text" id="itemTitle" placeholder="Ex: Fauteuil scandinave chêne massif" required>
+                </div>
+                <div class="form-field">
+                    <label for="itemCat">Catégorie</label>
+                    <select id="itemCat">
+                        <option value="Mode">Mode</option>
+                        <option value="Design">Design</option>
+                        <option value="Tech">Tech</option>
+                        <option value="Maison">Maison</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="itemCond">État de l'objet</label>
+                    <select id="itemCond">
+                        <option value="Neuf avec étiquette">Neuf avec étiquette</option>
+                        <option value="Comme neuf">Comme neuf</option>
+                        <option value="Très bon état">Très bon état</option>
+                        <option value="Bon état">Bon état</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="itemPrice">Prix de vente (€)</label>
+                    <input type="number" id="itemPrice" min="1" step="1" placeholder="85" required>
+                </div>
+                <div class="form-field">
+                    <label for="itemPhotoFile">Ajouter une photo depuis votre appareil (optionnel)</label>
+                    <input type="file" id="itemPhotoFile" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-navy" style="width: 100%;">Publier l'annonce maintenant</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE 3 : Messagerie & Négociation d'offre -->
+    <div class="overlay" id="modalChat" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
+        <div class="dialog-box">
+            <div class="dialog-head">
+                <div>
+                    <h3 id="chatTitle">Discuter & Faire une offre</h3>
+                    <p id="chatSubtitle" style="font-size: 0.85rem; color: var(--text-muted);"></p>
+                </div>
+                <button type="button" class="close-btn" onclick="closeModal('modalChat')" aria-label="Fermer la messagerie">&times;</button>
+            </div>
+            <div class="chat-history" id="chatHistory" aria-live="polite"></div>
+            <form onsubmit="handleSendMessage(event)">
+                <div class="form-field">
+                    <label for="offerAmount">Proposer un prix (€) — optionnel</label>
+                    <input type="number" id="offerAmount" min="1" placeholder="Ex: 70">
+                </div>
+                <div class="form-field">
+                    <label for="chatMessage">Votre message au vendeur</label>
+                    <input type="text" id="chatMessage" placeholder="Bonjour, l'article est-il toujours disponible ?" required>
+                </div>
+                <button type="submit" class="btn btn-navy" style="width: 100%;">Envoyer l'offre / le message</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE 4 : Configuration Supabase (Base de données gratuite) -->
+    <div class="overlay" id="modalDb" role="dialog" aria-modal="true" aria-labelledby="dbTitle">
+        <div class="dialog-box">
+            <div class="dialog-head">
+                <h3 id="dbTitle">Synchronisation Base de données</h3>
+                <button type="button" class="close-btn" onclick="closeModal('modalDb')" aria-label="Fermer">&times;</button>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
+                Sans configuration, vos annonces sont enregistrées localement sur votre appareil. Ajoutez l’URL de votre projet et sa clé publique Supabase pour activer les comptes et les annonces partagées.
+            </p>
+            <form onsubmit="saveDbConfig(event)">
+                <div class="form-field">
+                    <label for="sbUrl">Supabase Project URL</label>
+                    <input type="url" id="sbUrl" placeholder="https://xxxxx.supabase.co">
+                </div>
+                <div class="form-field">
+                    <label for="sbKey">Supabase Publishable / Anon Public Key</label>
+                    <input type="text" id="sbKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-navy" style="flex: 1;">Enregistrer</button>
+                    <button type="button" class="btn btn-outline" onclick="clearDbConfig()">Mode Local</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Zone de notification accessible -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // État global de l'application
+        let currentUser = JSON.parse(localStorage.getItem('kova_user')) || null;
+        let listings = JSON.parse(localStorage.getItem('kova_listings')) || [];
+        let favorites = JSON.parse(localStorage.getItem('kova_favorites')) || [];
+        let messages = JSON.parse(localStorage.getItem('kova_messages')) || {};
+        const KOVA_SUPABASE = { url: 'https://tupaegupivljdeipqzul.supabase.co', key: 'sb_publishable_Z52GyJQ8Vc5AYRfX7ZDJEQ_oic3ekvU' };
+        let dbConfig = { url: KOVA_SUPABASE.url, key: KOVA_SUPABASE.key };
+        let supabaseClient = null;
+        let supabaseSession = null;
+
+        function getSupabaseClient() {
+            if (!dbConfig.url || !dbConfig.key) return null;
+            if (!window.supabase || !window.supabase.createClient) {
+                throw new Error('La bibliothèque Supabase ne s’est pas chargée. Vérifiez votre connexion internet.');
+            }
+            if (!supabaseClient) {
+                supabaseClient = window.supabase.createClient(dbConfig.url, dbConfig.key, {
+                    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+                });
+                supabaseClient.auth.onAuthStateChange((_event, session) => {
+                    supabaseSession = session;
+                    if (session?.user) {
+                        const meta = session.user.user_metadata || {};
+                        const cached = JSON.parse(localStorage.getItem('kova_user') || 'null');
+                        const sameAccount = cached && cached.id === session.user.id;
+                        currentUser = {
+                            id: session.user.id,
+                            name: meta.display_name || (sameAccount ? cached.name : '') || session.user.email || 'Membre',
+                            identifier: session.user.email,
+                            method: 'email',
+                            interests: Array.isArray(meta.interests) ? meta.interests : (sameAccount && Array.isArray(cached.interests) ? cached.interests : [])
+                        };
+                        localStorage.setItem('kova_user', JSON.stringify(currentUser));
+                    } else {
+                        currentUser = null;
+                        localStorage.removeItem('kova_user');
+                    }
+                });
+            }
+            return supabaseClient;
+        }
+
+        let activeCategory = 'all';
+        let onlyFavorites = false;
+        let activeListingId = null;
+
+        const systemMotionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let revealObserver = null;
+
+        function prefersReducedMotion() {
+            return systemMotionPreference.matches || document.querySelector('[data-motion="reduced"]');
+        }
+
+        // Le contenu reste visible sans JavaScript ou sans IntersectionObserver.
+        function observeReveals(root = document, includeVisible = false) {
+            if (!revealObserver || prefersReducedMotion()) return;
+            root.querySelectorAll('[data-reveal]:not([data-reveal-ready])').forEach(el => {
+                el.dataset.revealReady = 'true';
+                const bounds = el.getBoundingClientRect();
+                // Les recherches et les favoris ne font pas disparaître les résultats déjà à l'écran.
+                if (bounds.bottom <= 0 || (!includeVisible && bounds.top < window.innerHeight)) return;
+                el.classList.add('reveal-pending');
+                revealObserver.observe(el);
+            });
+        }
+
+        function initializePageMotion() {
+            const reduced = prefersReducedMotion();
+            document.getElementById('btnMotion').setAttribute('aria-pressed', String(reduced));
+            if (revealObserver) {
+                revealObserver.disconnect();
+                revealObserver = null;
+            }
+            document.querySelectorAll('.reveal-pending, .is-revealing').forEach(el => {
+                el.classList.remove('reveal-pending', 'is-revealing');
+            });
+            if (reduced || !('IntersectionObserver' in window)) return;
+
+            revealObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const el = entry.target;
+                    el.classList.remove('reveal-pending');
+                    el.classList.add('is-revealing');
+                    revealObserver.unobserve(el);
+                    el.addEventListener('animationend', () => el.classList.remove('is-revealing'), { once: true });
+                });
+            }, { threshold: 0, rootMargin: '0px 0px -16px 0px' });
+            observeReveals(document, true);
+        }
+
+        // Un champ atteint au clavier est immédiatement net et visible.
+        document.addEventListener('focusin', event => {
+            const el = event.target.closest('[data-reveal]');
+            if (!el) return;
+            el.classList.remove('reveal-pending', 'is-revealing');
+            if (revealObserver) revealObserver.unobserve(el);
+        });
+
+        systemMotionPreference.addEventListener('change', initializePageMotion);
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (dbConfig.url) document.getElementById('sbUrl').value = dbConfig.url;
+            if (dbConfig.key) document.getElementById('sbKey').value = dbConfig.key;
+            try {
+                const client = getSupabaseClient();
+                if (client) {
+                    const { data, error } = await client.auth.getSession();
+                    if (error) throw error;
+                    supabaseSession = data.session;
+                    if (data.session?.user) {
+                        const u = data.session.user;
+                        const meta = u.user_metadata || {};
+                        currentUser = { id: u.id, name: meta.display_name || u.email || 'Membre', identifier: u.email, method: 'email', interests: meta.interests || [] };
+                        localStorage.setItem('kova_user', JSON.stringify(currentUser));
+                    } else {
+                        currentUser = null;
+                        localStorage.removeItem('kova_user');
+                    }
+                } else {
+                    currentUser = null;
+                    localStorage.removeItem('kova_user');
+                }
+            } catch (err) { console.error('Initialisation Supabase :', err); currentUser = null; localStorage.removeItem('kova_user'); }
+            updateUI();
+            initializePageMotion();
+            const header = document.querySelector('header');
+            let scrollFrame = null;
+            const updateHeader = () => {
+                header.classList.toggle('is-scrolled', window.scrollY > 12);
+                scrollFrame = null;
+            };
+            updateHeader();
+            window.addEventListener('scroll', () => {
+                if (scrollFrame === null) scrollFrame = requestAnimationFrame(updateHeader);
+            }, { passive: true });
+            if (dbConfig.url && dbConfig.key) {
+                await fetchSupabaseListings();
+            } else {
+                // Mode aperçu : les annonces enregistrées sur cet appareil restent consultables.
+                listings = JSON.parse(localStorage.getItem('kova_listings') || '[]');
+                renderCatalog();
+            }
+        });
+
+        // Accessibilité : Taille texte, Contraste, Animations
+        function setFontScale(scale) {
+            document.documentElement.style.setProperty('--font-scale', scale);
+            document.getElementById('btnTextNormal').setAttribute('aria-pressed', scale === 1);
+            document.getElementById('btnTextLarge').setAttribute('aria-pressed', scale > 1);
+            showToast(scale > 1 ? 'Taille du texte agrandie' : 'Taille du texte normale');
+        }
+
+        function toggleContrast() {
+            const isHigh = document.documentElement.getAttribute('data-contrast') === 'high';
+            if (isHigh) {
+                document.documentElement.removeAttribute('data-contrast');
+                document.getElementById('btnContrast').setAttribute('aria-pressed', 'false');
+                showToast('Contraste standard activé');
+            } else {
+                document.documentElement.setAttribute('data-contrast', 'high');
+                document.getElementById('btnContrast').setAttribute('aria-pressed', 'true');
+                showToast('Mode contraste élevé activé');
+            }
+        }
+
+        function toggleMotion() {
+            if (systemMotionPreference.matches) {
+                showToast('Animations réduites selon les préférences de votre appareil.');
+                return;
+            }
+            const isReduced = document.documentElement.getAttribute('data-motion') === 'reduced';
+            if (isReduced) {
+                document.documentElement.removeAttribute('data-motion');
+                document.getElementById('btnMotion').setAttribute('aria-pressed', 'false');
+                showToast('Animations activées');
+            } else {
+                document.documentElement.setAttribute('data-motion', 'reduced');
+                document.getElementById('btnMotion').setAttribute('aria-pressed', 'true');
+                showToast('Animations réduites');
+            }
+            initializePageMotion();
+        }
+
+        // Gestion des modales avec accessibilité clavier (Echap)
+        function openModal(id) {
+            const el = document.getElementById(id);
+            el.classList.add('open');
+            const firstInput = el.querySelector('input, select, button');
+            if (firstInput) firstInput.focus();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.overlay.open').forEach(el => el.classList.remove('open'));
+                const settings = document.getElementById('displaySettings');
+                if (settings.open) {
+                    const focusWasInside = settings.contains(document.activeElement);
+                    settings.open = false;
+                    if (focusWasInside) settings.querySelector('summary').focus();
+                }
+            }
+        });
+
+        document.addEventListener('click', event => {
+            const settings = document.getElementById('displaySettings');
+            if (settings.open && !settings.contains(event.target)) settings.open = false;
+        });
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3200);
+        }
+
+        // Authentification réelle via Supabase Auth (email + mot de passe)
+        async function handleLogin(e) {
+            e.preventDefault();
+            const client = getSupabaseClient();
+            if (!client) {
+                showToast('Configurez d’abord Supabase dans le pied de page.');
+                openModal('modalDb');
+                return;
+            }
+            const mode = document.getElementById('authMode').value;
+            const email = document.getElementById('authIdentifier').value.trim().toLowerCase();
+            const password = document.getElementById('authPassword').value;
+            const name = document.getElementById('authName').value.trim();
+            const interests = Array.from(document.querySelectorAll('input[name="interests"]:checked')).map(cb => cb.value);
+            try {
+                let result;
+                if (mode === 'signup') {
+                    if (!name) throw new Error('Choisissez un pseudo pour créer votre compte.');
+                    if (!interests.length) throw new Error('Choisissez au moins une préférence.');
+                    result = await client.auth.signUp({ email, password, options: { data: { display_name: name, interests } } });
+                    if (result.error) throw result.error;
+                    if (!result.data.session) {
+                        closeModal('modalAuth');
+                        showToast('Compte créé. Vérifiez votre boîte mail pour confirmer votre adresse, puis connectez-vous.');
+                        return;
+                    }
+                } else {
+                    result = await client.auth.signInWithPassword({ email, password });
+                    if (result.error) throw result.error;
+                }
+                supabaseSession = result.data.session;
+                const u = result.data.user;
+                const meta = u.user_metadata || {};
+                // À la connexion, on recharge le profil enregistré dans Supabase :
+                // le pseudo et les préférences ne sont jamais redemandés ni remplacés.
+                const savedProfile = JSON.parse(localStorage.getItem('kova_user') || 'null');
+                const sameAccount = savedProfile && savedProfile.id === u.id;
+                currentUser = {
+                    id: u.id,
+                    name: meta.display_name || (sameAccount ? savedProfile.name : '') || u.email || email,
+                    identifier: u.email,
+                    method: 'email',
+                    interests: Array.isArray(meta.interests) ? meta.interests : (sameAccount && Array.isArray(savedProfile.interests) ? savedProfile.interests : [])
+                };
+                localStorage.setItem('kova_user', JSON.stringify(currentUser));
+                closeModal('modalAuth');
+                await fetchSupabaseListings();
+                updateUI();
+                showToast(`Bienvenue sur KOVA, ${currentUser.name} !`);
+            } catch (err) {
+                console.error('Authentification KOVA :', err);
+                showToast(err.message || 'Connexion impossible. Vérifiez vos informations.');
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                const client = getSupabaseClient();
+                if (client) { const { error } = await client.auth.signOut(); if (error) throw error; }
+                supabaseSession = null;
+                currentUser = null;
+                localStorage.removeItem('kova_user');
+                updateUI();
+                showToast('Vous êtes déconnecté.');
+            } catch (err) { showToast(err.message || 'Déconnexion impossible.'); }
+        }
+
+        function handleSellClick() {
+            if (!currentUser) {
+                showToast('Connectez-vous d’abord pour publier une annonce.');
+                openModal('modalAuth');
+                return;
+            }
+            openModal('modalSell');
+        }
+
+        // Création d'une annonce : sauvegarde partagée dans Supabase
+        async function handleCreateListing(e) {
+            e.preventDefault();
+            const client = getSupabaseClient();
+            if (!client || !supabaseSession?.user) {
+                showToast('Connectez-vous avec votre compte KOVA pour publier.');
+                openModal('modalAuth');
+                return;
+            }
+            const title = document.getElementById('itemTitle').value.trim();
+            const category = document.getElementById('itemCat').value;
+            const condition = document.getElementById('itemCond').value;
+            const price = Number(document.getElementById('itemPrice').value);
+            const fileInput = document.getElementById('itemPhotoFile');
+            if (!title || !Number.isFinite(price) || price <= 0) { showToast('Vérifiez le titre et le prix.'); return; }
+
+            const publish = async (imageDataUrl) => {
+                try {
+                    const payload = {
+                        title, category, condition, price,
+                        seller: currentUser.name,
+                        seller_id: supabaseSession.user.id,
+                        image_url: imageDataUrl || ''
+                    };
+                    const { data, error } = await client.from('listings').insert(payload).select().single();
+                    if (error) throw error;
+                    listings.unshift(data);
+                    localStorage.setItem('kova_listings', JSON.stringify(listings));
+                    e.target.reset();
+                    closeModal('modalSell');
+                    updateUI();
+                    showToast('Annonce publiée sur KOVA !');
+                } catch (err) {
+                    console.error('Publication annonce :', err);
+                    showToast(err.message || 'Publication impossible. Vérifiez la configuration Supabase.');
+                }
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                if (file.size > 2 * 1024 * 1024) { showToast('Pour cette première version, choisissez une photo de 2 Mo maximum.'); return; }
+                if (!file.type.startsWith('image/')) { showToast('Le fichier doit être une image.'); return; }
+                const reader = new FileReader();
+                reader.onload = (ev) => publish(ev.target.result);
+                reader.onerror = () => showToast('Lecture de la photo impossible.');
+                reader.readAsDataURL(file);
+            } else { await publish(''); }
+        }
+
+        // Favoris
+        function toggleFavorite(id) {
+            if (!currentUser) {
+                openModal('modalAuth');
+                return;
+            }
+            const idx = favorites.indexOf(id);
+            if (idx === -1) {
+                favorites.push(id);
+                showToast('Ajouté aux favoris (+30 pts)');
+            } else {
+                favorites.splice(idx, 1);
+                showToast('Retiré des favoris');
+            }
+            localStorage.setItem('kova_favorites', JSON.stringify(favorites));
+            updateUI();
+        }
+
+        function toggleFavOnly() {
+            onlyFavorites = !onlyFavorites;
+            document.getElementById('btnFavFilter').setAttribute('aria-pressed', onlyFavorites);
+            renderCatalog();
+        }
+
+        function setCategory(cat, btn) {
+            activeCategory = cat;
+            document.querySelectorAll('.filter-btn').forEach(b => b.setAttribute('aria-pressed', 'false'));
+            btn.setAttribute('aria-pressed', 'true');
+            renderCatalog();
+        }
+
+        // Messagerie & Offres
+        function openChat(listingId) {
+            if (!currentUser) {
+                openModal('modalAuth');
+                return;
+            }
+            activeListingId = listingId;
+            const item = listings.find(l => l.id === listingId);
+            if (!item) return;
+
+            document.getElementById('chatTitle').textContent = item.title;
+            document.getElementById('chatSubtitle').textContent = `Vendu par ${item.seller} · Prix affiché : ${item.price} €`;
+            renderChatHistory();
+            openModal('modalChat');
+        }
+
+        function renderChatHistory() {
+            const box = document.getElementById('chatHistory');
+            const thread = messages[activeListingId] || [];
+            if (thread.length === 0) {
+                box.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin: auto;">Aucune discussion pour le moment. Envoyez un message ou proposez un prix.</p>';
+                return;
+            }
+            box.innerHTML = thread.map(m => `
+                <div class="msg-bubble ${m.sender === currentUser?.name ? 'mine' : ''}">
+                    ${m.offer ? `<div class="msg-offer-tag">Offre proposée : ${m.offer} €</div><br>` : ''}
+                    <strong>${escapeHtml(m.sender)} :</strong> ${escapeHtml(m.text)}
+                </div>
+            `).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function handleSendMessage(e) {
+            e.preventDefault();
+            const offer = document.getElementById('offerAmount').value;
+            const text = document.getElementById('chatMessage').value.trim();
+            if (!text) return;
+
+            if (!messages[activeListingId]) messages[activeListingId] = [];
+            messages[activeListingId].push({
+                sender: currentUser.name,
+                offer: offer ? parseFloat(offer) : null,
+                text,
+                date: new Date().toISOString()
+            });
+
+            localStorage.setItem('kova_messages', JSON.stringify(messages));
+            document.getElementById('offerAmount').value = '';
+            document.getElementById('chatMessage').value = '';
+            renderChatHistory();
+            updateUI();
+            showToast('Message et offre envoyés !');
+        }
+
+        // Gamification & Progression
+        function updateGamification() {
+            let points = 0;
+            const hasLogin = Boolean(currentUser);
+            const hasFav = favorites.length > 0;
+            const hasAction = listings.length > 0 || Object.keys(messages).length > 0;
+
+            if (hasLogin) points += 50;
+            if (hasFav) points += 30;
+            if (hasAction) points += 70;
+
+            document.getElementById('m-login').classList.toggle('done', hasLogin);
+            document.getElementById('m-fav').classList.toggle('done', hasFav);
+            document.getElementById('m-offer').classList.toggle('done', hasAction);
+
+            const pct = Math.min(100, Math.round((points / 150) * 100));
+            const level = points >= 150 ? 'Niveau 3 · Expert' : points >= 80 ? 'Niveau 2 · Actif' : 'Niveau 1 · Débutant';
+
+            document.getElementById('navPoints').textContent = `${points} pts`;
+            document.getElementById('pointsLink').setAttribute('aria-label', `${points} points · ${level}. Voir ma progression`);
+            document.getElementById('pointsLink').title = `${points} points · ${level}`;
+            document.getElementById('levelBadge').textContent = level;
+            document.getElementById('progressFill').style.transform = `scaleX(${pct / 100})`;
+            document.getElementById('progressBar').setAttribute('aria-valuenow', pct);
+            document.getElementById('favCount').textContent = favorites.length;
+        }
+
+        // Mise à jour globale de l'interface
+        function updateUI() {
+            const btnAuth = document.getElementById('btnAuth');
+            const heroBtn = document.getElementById('heroPrimaryBtn');
+            const catalogSub = document.getElementById('catalogSub');
+
+            if (currentUser) {
+                btnAuth.textContent = `${currentUser.name} (Déconnexion)`;
+                btnAuth.onclick = handleLogout;
+                heroBtn.textContent = 'Publier une annonce';
+                heroBtn.removeAttribute('href');
+                heroBtn.onclick = handleSellClick;
+                const prefs = currentUser.interests.length ? currentUser.interests.join(', ') : 'Toutes catégories';
+                catalogSub.textContent = `Connecté en tant que ${currentUser.name} · Préférences actives : ${prefs}`;
+            } else {
+                btnAuth.textContent = 'Connexion';
+                btnAuth.onclick = () => openModal('modalAuth');
+                heroBtn.textContent = 'Voir les annonces';
+                heroBtn.href = '#catalogue';
+                heroBtn.onclick = null;
+                catalogSub.textContent = 'Consultez les annonces publiques. La connexion est nécessaire uniquement pour contacter un vendeur, publier ou enregistrer vos favoris.';
+            }
+
+            updateGamification();
+            renderCatalog();
+        }
+
+        // Rendu du catalogue (uniquement annonces réelles après connexion)
+        function renderCatalog() {
+            const container = document.getElementById('catalogContainer');
+            if (revealObserver) {
+                container.querySelectorAll('.reveal-pending').forEach(el => revealObserver.unobserve(el));
+            }
+
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const sort = document.getElementById('sortSelect').value;
+
+            let filtered = listings.filter(item => {
+                const matchCat = activeCategory === 'all' || item.category === activeCategory;
+                const matchFav = !onlyFavorites || favorites.includes(item.id);
+                const matchQuery = !query || item.title.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
+                return matchCat && matchFav && matchQuery;
+            });
+
+            // Tri intelligent basé sur les préférences
+            filtered.sort((a, b) => {
+                if (sort === 'recommended') {
+                    const interests = currentUser?.interests || [];
+                    const aPref = interests.includes(a.category) ? 1 : 0;
+                    const bPref = interests.includes(b.category) ? 1 : 0;
+                    if (bPref !== aPref) return bPref - aPref;
+                    return b.id - a.id;
+                }
+                if (sort === 'price-asc') return a.price - b.price;
+                if (sort === 'price-desc') return b.price - a.price;
+                return b.id - a.id;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="state-box" data-reveal>
+                        <h3>Aucune annonce réelle ne correspond encore</h3>
+                        <p>Soyez le premier à mettre un objet en vente dans cette catégorie ou élargissez vos filtres.</p>
+                        <button type="button" class="btn btn-navy" onclick="openModal('modalSell')">+ Déposer une première annonce</button>
+                    </div>
+                `;
+                observeReveals(container);
+                return;
+            }
+
+            container.innerHTML = `<div class="products-grid">${filtered.map(item => {
+                const isFav = favorites.includes(item.id);
+                const isRecommended = Boolean(currentUser?.interests?.includes(item.category));
+                const msgCount = (messages[item.id] || []).length;
+                return `
+                    <article class="product-card" data-reveal>
+                        <div class="product-media">
+                            ${isRecommended ? '<span class="badge-top-left">Recommandé</span>' : ''}
+                            <button type="button" class="fav-btn" aria-pressed="${isFav}" aria-label="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}" onclick="toggleFavorite(${item.id})">
+                                ${isFav ? '♥' : '♡'}
+                            </button>
+                            ${item.image_url
+                                ? `<img loading="lazy" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">`
+                                : `<span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">${escapeHtml(item.category)} · Photo non ajoutée</span>`
+                            }
+                        </div>
+                        <div class="product-body">
+                            <div class="product-meta">
+                                <span>${escapeHtml(item.category)}</span>
+                                <span>${escapeHtml(item.condition)}</span>
+                            </div>
+                            <h3 class="product-title">${escapeHtml(item.title)}</h3>
+                            <p class="product-seller">Vendeur : ${escapeHtml(item.seller)}</p>
+                            <div class="product-footer">
+                                <div class="price-row">
+                                    <span class="price-val">${item.price} €</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);">${msgCount} message(s)</span>
+                                </div>
+                                <div class="card-actions">
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="openChat(${item.id})">Faire une offre</button>
+                                    <button type="button" class="btn btn-navy btn-sm" onclick="openChat(${item.id})">Contacter</button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('')}</div>`;
+            observeReveals(container);
+        }
+
+        // Configuration et synchronisation Supabase
+        function saveDbConfig(e) {
+            e.preventDefault();
+            const url = document.getElementById('sbUrl').value.trim().replace(/\/$/, '');
+            const key = document.getElementById('sbKey').value.trim();
+            if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url) || !key) {
+                showToast('Vérifiez l’URL du projet et la clé Publishable/Anon publique.');
+                return;
+            }
+            dbConfig = { url, key };
+            localStorage.setItem('kova_db', JSON.stringify(dbConfig));
+            supabaseClient = null;
+            try { getSupabaseClient(); } catch (err) { showToast(err.message); return; }
+            closeModal('modalDb');
+            showToast('Supabase configuré. Vous pouvez créer votre compte.');
+            fetchSupabaseListings();
+        }
+
+        function clearDbConfig() {
+            dbConfig = { url: KOVA_SUPABASE.url, key: KOVA_SUPABASE.key };
+            supabaseClient = null;
+            supabaseSession = null;
+            localStorage.removeItem('kova_db');
+            document.getElementById('sbUrl').value = '';
+            document.getElementById('sbKey').value = '';
+            closeModal('modalDb');
+            showToast('Configuration Supabase effacée.');
+        }
+
+        async function fetchSupabaseListings() {
+            try {
+                const client = getSupabaseClient();
+                if (!client) return;
+                const { data, error } = await client.from('listings').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                listings = Array.isArray(data) ? data : [];
+                localStorage.setItem('kova_listings', JSON.stringify(listings));
+                renderCatalog();
+            } catch (err) {
+                console.error('Chargement annonces Supabase :', err);
+                showToast(err.message || 'Impossible de charger les annonces.');
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[m]);
+        }
+    /* ===== KOVA+ : menu, raccourcis, animations ===== */
+(() => {
+  const $ = id => document.getElementById(id), drawer = $('drawer'), back = $('drawerBackdrop'), btn = $('menuBtn');
+  let lastFocus = null;
+  const syncDrawer = () => {
+    const auth = $('btnAuth').textContent.trim();
+    $('dAuth').textContent = auth;
+    $('dUser').textContent = auth.includes('(') ? auth.split(' (')[0] : 'Visiteur';
+    $('dPts').textContent = '★ ' + ($('navPoints').textContent || '0 pts').replace(' pts','');
+    $('dLevel').textContent = $('levelBadge') && $('levelBadge').textContent ? 'Niveau : ' + $('levelBadge').textContent : 'Connectez-vous pour gagner des points';
+    $('dFav').textContent = $('favCount').textContent;
+  };
+  const setMenu = open => {
+    if (open) { lastFocus = document.activeElement; syncDrawer(); }
+    drawer.classList.toggle('open', open); back.classList.toggle('open', open);
+    document.body.classList.toggle('drawer-open', open);
+    btn.setAttribute('aria-expanded', open); drawer.setAttribute('aria-hidden', !open);
+    if (open) setTimeout(() => $('drawerClose').focus(), 60); else if (lastFocus) lastFocus.focus();
+  };
+  btn.onclick = () => setMenu(!drawer.classList.contains('open'));
+  back.onclick = $('drawerClose').onclick = () => setMenu(false);
+  const goTo = sel => setTimeout(() => { const t = document.querySelector(sel); if (t) t.scrollIntoView({behavior:'smooth', block:'start'}); }, 250);
+  drawer.addEventListener('click', e => {
+    const el = e.target.closest('a,button.drawer-item'); if (!el) return;
+    const act = el.dataset.act, cat = el.dataset.cat;
+    if (el.dataset.go !== undefined) { if (el.dataset.open) $(el.dataset.open).open = true; setMenu(false); goTo(el.getAttribute('href')); return; }
+    if (cat) { const f = document.querySelector(`.filter-btn[data-cat="${cat}"]`); if (f) f.click(); setMenu(false); goTo('#catalogue'); return; }
+    if (['text','contrast','motion'].includes(act)) {
+      if (act === 'text') { const big = document.documentElement.style.getPropertyValue('--font-scale') == 1.15; setFontScale(big ? 1 : 1.15); showToast(big ? 'Texte normal' : 'Texte agrandi'); }
+      if (act === 'contrast') { toggleContrast(); showToast('Contraste modifié'); }
+      if (act === 'motion') { toggleMotion(); showToast('Animations modifiées'); }
+      return;
+    }
+    setMenu(false);
+    setTimeout(() => {
+      if (act === 'sell') handleSellClick();
+      if (act === 'search') { goTo('#catalogue'); setTimeout(() => $('searchInput').focus({preventScroll:true}), 500); }
+      if (act === 'favs') { toggleFavOnly(); goTo('#catalogue'); }
+      if (act === 'auth') $('btnAuth').click();
+      if (act === 'db') openModal('modalDb');
+    }, 300);
+  });
+  // Piège du focus dans le menu
+  drawer.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const f = [...drawer.querySelectorAll('a,button')].filter(x => x.offsetParent !== null);
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length-1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length-1]) { e.preventDefault(); f[0].focus(); }
+  });
+  // Raccourcis clavier
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && drawer.classList.contains('open')) { setMenu(false); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (document.querySelector('.overlay.open')) return;
+    const k = e.key.toLowerCase();
+    if (k === 'm') setMenu(!drawer.classList.contains('open'));
+    if (k === '/') { e.preventDefault(); $('searchInput').focus(); $('searchInput').scrollIntoView({behavior:'smooth', block:'center'}); }
+    if (k === 'n') handleSellClick();
+    if (k === 'f') { toggleFavOnly(); goTo('#catalogue'); }
+  });
+  // Barre de progression, en-tête, retour en haut, lien actif
+  const bar = $('scrollBar'), top = $('toTop'), header = document.querySelector('header');
+  const links = [...document.querySelectorAll('.nav-links a')];
+  let tick = false;
+  addEventListener('scroll', () => { if (tick) return; tick = true; requestAnimationFrame(() => {
+    const h = document.documentElement, y = h.scrollTop, max = h.scrollHeight - h.clientHeight;
+    bar.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
+    header.classList.toggle('is-scrolled', y > 10); top.classList.toggle('show', y > 600);
+    links.forEach(a => { const s = document.querySelector(a.getAttribute('href')); if (!s) return; const r = s.getBoundingClientRect(); a.classList.toggle('active', r.top < innerHeight * .4 && r.bottom > innerHeight * .4); });
+    tick = false; }); }, {passive:true});
+  top.onclick = () => scrollTo({top:0, behavior:'smooth'});
+  // Effet d'onde sur les boutons
+  document.addEventListener('pointerdown', e => {
+    const b = e.target.closest('.btn'); if (!b) return;
+    const r = b.getBoundingClientRect(), s = Math.max(r.width, r.height), d = document.createElement('span');
+    d.className = 'ripple'; d.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX - r.left - s/2}px;top:${e.clientY - r.top - s/2}px`;
+    b.appendChild(d); setTimeout(() => d.remove(), 650);
+  });
+})();
+/* ===== KOVA+ v2 : messagerie, synchro, animations ===== */
+(() => {
+  const $ = id => document.getElementById(id);
+  const me = () => currentUser && currentUser.name;
+  const rk = () => 'kova_read_' + me();
+  const reads = () => { try { return JSON.parse(localStorage.getItem(rk())) || {}; } catch { return {}; } };
+  const unread = id => (messages[id] || []).slice(reads()[id] || 0).filter(m => m.sender !== me()).length;
+  const total = () => me() ? Object.keys(messages).reduce((n, id) => n + unread(id), 0) : 0;
+  const markRead = id => { const r = reads(); r[id] = (messages[id] || []).length; localStorage.setItem(rk(), JSON.stringify(r)); badges(); };
+  function badges() {
+    const n = total(), c = $('dInbox');
+    $('menuBtn').classList.toggle('unread', n > 0);
+    if (c) { c.textContent = n; c.classList.toggle('hot', n > 0); }
+    const a = $('dAvatar'); if (a) a.textContent = (me() || '?')[0].toUpperCase();
+  }
+  // Boîte de réception
+  window.openInbox = function () {
+    if (!me()) { showToast('Connectez-vous pour accéder à vos messages.'); return openModal('modalAuth'); }
+    const mine = listings.filter(l => l.seller === me() || (messages[l.id] || []).some(m => m.sender === me()));
+    const box = $('inboxList'); $('inboxSub').textContent = mine.length + ' conversation(s)';
+    box.innerHTML = mine.length ? '' : '<p style="color:var(--text-muted);text-align:center;padding:24px">Aucune conversation. Contactez un vendeur depuis une annonce.</p>';
+    mine.sort((a, b) => ((messages[b.id] || []).slice(-1)[0]?.date || '').localeCompare((messages[a.id] || []).slice(-1)[0]?.date || '')).forEach((l, i) => {
+      const last = (messages[l.id] || []).slice(-1)[0], u = unread(l.id), b = document.createElement('button');
+      b.type = 'button'; b.className = 'thread'; b.style.animationDelay = i * 50 + 'ms';
+      b.innerHTML = `<span class="avatar">${escapeHtml(l.seller[0].toUpperCase())}</span><span class="t"><b>${escapeHtml(l.title)}</b><small>${last ? escapeHtml(last.sender + ' : ' + last.text) : 'Aucun message'}</small></span>${u ? `<span class="count">${u}</span>` : ''}`;
+      b.onclick = () => { closeModal('modalInbox'); openChat(l.id); };
+      box.appendChild(b);
+    });
+    openModal('modalInbox');
+  };
+  const _oc = openChat; openChat = function (id) { _oc(id); if (me()) markRead(id); };
+  const _rc = renderChatHistory; renderChatHistory = function () { _rc(); if (me() && activeListingId != null && $('modalChat').classList.contains('open')) markRead(activeListingId); };
+  // Réponses rapides
+  const form = $('chatMessage').closest('form');
+  if (form) { const q = document.createElement('div'); q.className = 'quick'; q.setAttribute('aria-label', 'Réponses rapides');
+    ['Toujours disponible ?', 'Dernier prix ?', 'Remise en main propre ?', 'Plus de photos ?'].forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.onclick = () => { $('chatMessage').value = t; $('chatMessage').focus(); }; q.appendChild(b); });
+    form.parentNode.insertBefore(q, form); }
+  // Envoi + confettis + push Supabase
+  const burst = () => { for (let i = 0; i < 22; i++) { const s = document.createElement('i'); s.className = 'confetti'; const a = Math.random() * 6.28, d = 90 + Math.random() * 160;
+    s.style.cssText = `--x:${Math.cos(a) * d}px;--y:${Math.sin(a) * d - 60}px;--r:${Math.random() * 720}deg;background:hsl(${210 + Math.random() * 40},70%,${40 + Math.random() * 25}%)`; document.body.appendChild(s); setTimeout(() => s.remove(), 1200); } };
+  const _send = handleSendMessage;
+  handleSendMessage = function (e) {
+    const before = (messages[activeListingId] || []).length, hadOffer = $('offerAmount').value;
+    _send(e); const t = messages[activeListingId] || [];
+    if (t.length > before) { markRead(activeListingId); if (hadOffer && !document.querySelector('[data-motion="reduced"]')) burst(); pushMsg(activeListingId, t[t.length - 1]); }
+  };
+  // Synchronisation entre onglets
+  addEventListener('storage', e => {
+    if (e.key !== 'kova_messages') return;
+    const n0 = total(); messages = JSON.parse(e.newValue) || {};
+    if ($('modalChat').classList.contains('open')) renderChatHistory();
+    badges(); renderCatalog(); if (total() > n0) showToast('Nouveau message reçu 💬');
+  });
+  // Synchronisation entre appareils (Supabase, table "messages")
+  const H = () => ({ apikey: dbConfig.key, Authorization: 'Bearer ' + dbConfig.key, 'Content-Type': 'application/json' });
+  async function pushMsg(id, m) { if (!dbConfig.url) return; try { await fetch(dbConfig.url + '/rest/v1/messages', { method: 'POST', headers: { ...H(), Prefer: 'return=minimal' }, body: JSON.stringify({ listing_id: String(id), sender: m.sender, text: m.text, offer: m.offer, sent_at: m.date }) }); } catch {} }
+  async function pull() {
+    if (!dbConfig.url || !me() || document.hidden) return;
+    try { const r = await fetch(dbConfig.url + '/rest/v1/messages?select=*&order=sent_at.asc', { headers: H() }); if (!r.ok) return; const rows = await r.json(); let changed = false; const n0 = total();
+      rows.forEach(x => { const k = x.listing_id, L = messages[k] || (messages[k] = []); if (!L.some(m => m.date === x.sent_at && m.sender === x.sender)) { L.push({ sender: x.sender, text: x.text, offer: x.offer, date: x.sent_at }); L.sort((a, b) => a.date.localeCompare(b.date)); changed = true; } });
+      if (changed) { localStorage.setItem('kova_messages', JSON.stringify(messages)); if ($('modalChat').classList.contains('open')) renderChatHistory(); badges(); renderCatalog(); if (total() > n0) showToast('Nouveau message reçu 💬'); }
+    } catch {}
+  }
+  setInterval(pull, 6000);
+  // Inclinaison 3D des cartes
+  const cc = $('catalogContainer');
+  cc.addEventListener('pointermove', e => { const c = e.target.closest('.product-card'); if (!c || document.querySelector('[data-motion="reduced"]') || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    const r = c.getBoundingClientRect(); c.style.setProperty('--ry', ((e.clientX - r.left) / r.width - .5) * 8 + 'deg'); c.style.setProperty('--rx', (.5 - (e.clientY - r.top) / r.height) * 8 + 'deg'); });
+  cc.addEventListener('pointerout', e => { const c = e.target.closest('.product-card'); if (c) { c.style.removeProperty('--rx'); c.style.removeProperty('--ry'); } });
+  // Bouton « Vendre » magnétique
+  document.querySelectorAll('.nav-actions .btn').forEach(b => { b.addEventListener('pointermove', e => { const r = b.getBoundingClientRect(); b.style.translate = ((e.clientX - r.left) / r.width - .5) * 8 + 'px ' + ((e.clientY - r.top) / r.height - .5) * 6 + 'px'; }); b.addEventListener('pointerleave', () => b.style.translate = ''); });
+  // Menu : bouton messagerie + raccourci I
+  $('drawer').addEventListener('click', e => { if (e.target.closest('[data-act="inbox"]')) setTimeout(openInbox, 320); });
+  document.addEventListener('keydown', e => { if (e.key.toLowerCase() === 'i' && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && !document.querySelector('.overlay.open')) openInbox(); });
+  new MutationObserver(badges).observe($('btnAuth'), { childList: true, characterData: true, subtree: true });
+  badges(); setTimeout(pull, 800);
+})();
+/* ===== KOVA+ v3 : thème, fiches, légal, pagination ===== */
+(() => {
+  const $ = id => document.getElementById(id), EMAIL = 'VOTRE-EMAIL-A-CONFIGURER'; /* À remplacer avant mise en ligne */
+  $('yr').textContent = new Date().getFullYear();
+  $('drawer').addEventListener('click', e => { if (e.target.closest('[data-act="theme"]')) { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; try { localStorage.setItem('kova_theme', t); } catch {} } });
+  const info = (t, h) => { $('infoTitle').textContent = t; $('infoBody').innerHTML = h; openModal('modalInfo'); };
+  const P = a => a.map(x => `<p>${x}</p>`).join('');
+  const LEGAL = {
+    mentions: ['Mentions légales', P(['<b>Éditeur :</b> [À COMPLÉTER : nom ou raison sociale, adresse, SIRET].', '<b>Directeur de la publication :</b> [À COMPLÉTER].', '<b>Hébergeur :</b> GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis.', `<b>Contact :</b> ${EMAIL}`])],
+    cgu: ['Conditions d\'utilisation', P(['KOVA met en relation des particuliers pour l\'achat et la vente d\'objets. KOVA n\'est pas partie aux transactions conclues entre membres.', 'Les membres sont responsables des annonces et messages qu\'ils publient. Les contenus illicites, trompeurs ou contrefaits sont interdits et peuvent être signalés.', '[À COMPLÉTER : règles de modération, responsabilité, droit applicable. Faites relire ce texte par un professionnel du droit.]'])],
+    privacy: ['Politique de confidentialité', P(['<b>Données traitées :</b> nom ou pseudo, identifiant de connexion, centres d\'intérêt, annonces et messages.', '<b>Stockage :</b> dans votre navigateur et, si la base de données est activée, sur le service Supabase configuré.', `<b>Vos droits (RGPD) :</b> accès, rectification, effacement, opposition. Écrivez à ${EMAIL}.`, '<b>Responsable du traitement :</b> [À COMPLÉTER].'])],
+    cookies: ['Cookies et stockage', P(['KOVA n\'utilise aucun cookie de suivi ni publicitaire.', 'Le stockage local du navigateur conserve votre session, vos favoris, vos messages, votre thème et vos réglages d\'accessibilité. Vous pouvez l\'effacer à tout moment depuis les réglages de votre navigateur.'])]
+  };
+  document.addEventListener('click', e => { const b = e.target.closest('[data-legal]'); if (b) { const [t, h] = LEGAL[b.dataset.legal]; info(t, `<div class="legal-txt">${h}</div>`); } });
+  const ck = $('cookieBar'); try { if (!localStorage.getItem('kova_ck')) ck.hidden = false; } catch {}
+  $('ckOk').onclick = () => { ck.hidden = true; try { localStorage.setItem('kova_ck', '1'); } catch {} };
+  $('contactForm').onsubmit = e => { e.preventDefault(); location.href = `mailto:${EMAIL}?subject=${encodeURIComponent('Message de ' + $('cName').value)}&body=${encodeURIComponent($('cMsg').value)}`; };
+  // Fiche détaillée d'une annonce
+  const cc = $('catalogContainer'), safe = u => /^(https?:\/\/|data:image\/)/i.test(u || '');
+  cc.addEventListener('click', e => {
+    const c = e.target.closest('.product-card'); if (!c || e.target.closest('button')) return;
+    const m = c.innerHTML.match(/openChat\((\d+)\)/), l = m && listings.find(x => String(x.id) === m[1]); if (!l) return;
+    const url = location.origin + location.pathname + '#catalogue';
+    info(l.title, `<div class="det">${safe(l.image_url) ? `<img src="${escapeHtml(l.image_url)}" alt="${escapeHtml(l.title)}">` : ''}<p><b style="font-size:1.4rem">${l.price} €</b> · ${escapeHtml(l.category)} · ${escapeHtml(l.condition)}</p><p style="color:var(--text-muted)">Vendeur : ${escapeHtml(l.seller)}</p><div class="acts"><button class="btn btn-navy" id="dCt" type="button">Contacter</button><button class="btn btn-outline" id="dSh" type="button">Partager</button><a class="btn btn-outline" href="mailto:${EMAIL}?subject=${encodeURIComponent('Signalement : ' + l.title)}">Signaler</a></div></div>`);
+    $('dCt').onclick = () => { closeModal('modalInfo'); openChat(l.id); };
+    $('dSh').onclick = () => navigator.share ? navigator.share({ title: l.title, text: `${l.title} – ${l.price} € sur KOVA`, url }).catch(() => {}) : navigator.clipboard.writeText(url).then(() => showToast('Lien copié'));
+  });
+  // Pagination « Afficher plus » + compteur
+  let shown = 12;
+  ['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, e => { if (e.target.closest && e.target.closest('#searchInput,#sortSelect,.filter-btn,#btnFavFilter')) shown = 12; }, true));
+  const enhance = () => {
+    const cards = [...cc.querySelectorAll('.product-card')], grid = cc.querySelector('.products-grid'); if (!grid) return;
+    cc.querySelectorAll('.more-wrap,.result-count').forEach(x => x.remove());
+    cards.forEach((c, i) => c.style.display = i >= shown ? 'none' : '');
+    const n = document.createElement('p'); n.className = 'result-count'; n.textContent = `${cards.length} annonce${cards.length > 1 ? 's' : ''}`; grid.before(n);
+    if (cards.length > shown) { const w = document.createElement('div'); w.className = 'more-wrap'; w.innerHTML = `<button class="btn btn-outline" type="button">Afficher plus (${cards.length - shown} restantes)</button>`; w.firstChild.onclick = () => { shown += 12; enhance(); }; grid.after(w); }
+  };
+  const _r = renderCatalog; renderCatalog = function () { _r(); enhance(); }; renderCatalog();
+})();
+/* KOVA+ v5 : tuiles catégories */
+document.querySelectorAll('.cat').forEach(b => b.onclick = () => { const f = document.querySelector(`.filter-btn[data-cat="${b.dataset.cat}"]`); if (f) f.click(); document.getElementById('catalogue').scrollIntoView({ behavior: 'smooth' }); });
+</script>
+
+<script>
+/* KOVA+ : démonstrateur d'abonnement et moteur de comparaison local.
+   Le choix d'offre est volontairement simulé : aucun paiement n'est encaissé. */
+(() => {
+ const $ = id => document.getElementById(id);
+ const limits = {free:3, plus:30, pro:Infinity};
+ const names = {free:'Découverte',plus:'KOVA+ Plus',pro:'KOVA+ Premium'};
+ const price = {free:'0 €',plus:'4,99 €/mois',pro:'9,99 €/mois'};
+ const storageKey = () => 'kova_plus_demo';
+ const monthKey = () => new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0');
+ function readState(){
+  try { const x=JSON.parse(localStorage.getItem(storageKey())||'{}'); if(x.month!==monthKey()) return {plan:x.plan||'free',month:monthKey(),used:0}; return {plan:x.plan||'free',month:monthKey(),used:Number(x.used)||0}; }
+  catch{return {plan:'free',month:monthKey(),used:0};}
+ }
+ let state=readState();
+ function save(){localStorage.setItem(storageKey(),JSON.stringify(state));}
+ function remaining(){return limits[state.plan]===Infinity?Infinity:Math.max(0,limits[state.plan]-state.used);}
+ function renderPlan(){
+  $('aiPlanBadge').textContent=names[state.plan];
+  const rem=remaining();
+  $('aiUsage').textContent=rem===Infinity?'Analyses illimitées* · Offre '+names[state.plan]+' (démo).':`${rem} analyse${rem>1?'s':''} restante${rem>1?'s':''} ce mois-ci · ${state.used}/${limits[state.plan]} utilisée(s).`;
+  document.querySelectorAll('[data-plan-card]').forEach(card=>{
+   const active=card.dataset.planCard===state.plan, btn=card.querySelector('[data-plan]');
+   btn.textContent=active?'Offre sélectionnée':(card.dataset.planCard==='free'?'Choisir Découverte':'Tester '+names[card.dataset.planCard]);
+   btn.setAttribute('aria-pressed',String(active));
+  });
+  $('planStatus').textContent=`Offre active en mode démonstration : ${names[state.plan]} (${price[state.plan]}). Aucun paiement réel n’est effectué.`;
+ }
+ document.querySelectorAll('[data-plan]').forEach(btn=>btn.addEventListener('click',()=>{
+  const next=btn.dataset.plan;
+  if(!['free','plus','pro'].includes(next))return;
+  state.plan=next; save(); renderPlan();
+  $('aiOutput').innerHTML=`<p class="ai-note">Offre ${names[next]} activée pour cette démonstration. Pour vendre réellement cet abonnement, un paiement sécurisé devra être connecté.</p>`;
+ }));
+ const esc = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const norm = x => String(x||'').toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ const catWords = {mode:['mode','vetement','vêtement','veste','chaussure','sac','robe'],tech:['tech','ordinateur','pc','telephone','téléphone','iphone','console','tablette','electronique'],maison:['maison','meuble','lampe','canape','canapé','deco','déco'],design:['design','art','creation','création','objet']};
+ function analyze(question){
+  const all=(typeof listings!=='undefined' && Array.isArray(listings))?listings:[];
+  const q=norm(question), words=q.split(/[^a-z0-9€]+/).filter(w=>w.length>2);
+  const maxMatch=q.match(/(?:moins de|max(?:imum)?|jusqu.?a|budget de|sous)\s*(\d{1,6})\s*(?:€|euros?)?/);
+  const max=maxMatch?Number(maxMatch[1]):null;
+  const wantedCats=Object.entries(catWords).filter(([c,ws])=>ws.some(w=>q.includes(norm(w)))).map(([c])=>c);
+  const normalizedCat = c => norm(c);
+  const pool=all.filter(x=>Number.isFinite(Number(x.price))&&Number(x.price)>=0&&(!max||Number(x.price)<=max));
+  const scored=pool.map(item=>{
+   const text=norm([item.title,item.category,item.condition,item.description].join(' '));
+   let relevance=0; words.forEach(w=>{if(text.includes(w))relevance+=3;});
+   if(wantedCats.some(c=>normalizedCat(item.category).includes(c)))relevance+=5;
+   if(words.length===0) relevance=1;
+   const peers=pool.filter(x=>norm(x.category)===norm(item.category)).map(x=>Number(x.price)).sort((a,b)=>a-b);
+   const median=peers.length?peers[Math.floor(peers.length/2)]:Number(item.price);
+   const deal=median>0?Math.max(-3,Math.min(5,(median-Number(item.price))/median*10)):0;
+   const condition=norm(item.condition);
+   const quality=/neuf|excellent|tres bon|très bon/.test(condition)?1.5:/bon/.test(condition)?.8:0;
+   const score=relevance+deal+quality;
+   return {item,score,median,deal};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.item.price-b.item.price).slice(0,4);
+  return {results:scored,total:pool.length,max};
+ }
+ function run(e){
+  e.preventDefault();
+  state=readState();
+  if(remaining()<=0){
+   $('aiOutput').innerHTML='<p class="ai-note">Vous avez atteint votre limite mensuelle. Passez à KOVA+ Plus pour 30 analyses par mois ou Premium pour les analyses illimitées (offres simulées dans cette version).</p>';
+   return;
+  }
+  const question=$('aiQuestion').value.trim(); if(!question)return;
+  state.used++;save();renderPlan();
+  const {results,total,max}=analyze(question);
+  if(!results.length){
+   $('aiOutput').innerHTML=`<p class="ai-note">Je n’ai pas trouvé d’annonce correspondante parmi les ${total} annonce(s) disponibles${max?' dans votre budget':''}. Essayez d’élargir votre recherche ou de modifier les mots-clés.</p>`;
+   return;
+  }
+  $('aiOutput').innerHTML='<h4 style="margin-bottom:2px">Les annonces à regarder en priorité</h4>'+results.map(({item,median,deal},i)=>{
+   const img=item.image_url?`<img src="${esc(item.image_url)}" alt="${esc(item.title)}" loading="lazy">`:'<div class="ai-placeholder" aria-hidden="true">KOVA</div>';
+   const saving=Math.max(0,Math.round(median-Number(item.price)));
+   return `<article class="ai-result">${img}<div><strong>${esc(item.title)}</strong><p>${esc(item.category)} · ${esc(item.condition||'État non précisé')} · ${esc(item.seller||'Vendeur')}</p><p>${deal>0?`Prix inférieur d’environ ${Math.round(deal*10)} % au prix médian observé dans cette sélection.`:'Annonce classée selon la correspondance avec votre recherche.'}</p></div><div class="ai-price">${Number(item.price).toLocaleString('fr-FR')} €${saving>0?`<p>Écart estimé : ${saving} €</p>`:''}<button class="btn btn-outline btn-sm" type="button" data-open-listing="${esc(item.id)}">Voir</button></div></article>`;
+  }).join('')+'<p class="ai-note">Comparaison calculée uniquement à partir des annonces KOVA actuellement chargées. Un prix bas ne garantit ni la qualité, ni l’authenticité, ni la disponibilité de l’article.</p>';
+  $('aiOutput').querySelectorAll('[data-open-listing]').forEach(b=>b.addEventListener('click',()=>{
+   const id=String(b.dataset.openListing); const listing=(typeof listings!=='undefined'?listings:[]).find(x=>String(x.id)===id);
+   if(listing && typeof openChat==='function') { if(typeof openModal==='function') openChat(listing.id); }
+   else document.getElementById('catalogue').scrollIntoView({behavior:'smooth'});
+  }));
+ }
+ $('aiForm').addEventListener('submit',run);
+ renderPlan();
+})();
+</script>
+
+
+<style id="kova-navy-monochrome-theme">
+/* KOVA — palette noir, blanc, gris et bleu marine */
+:root {
+  --bg-main:#FFFFFF !important; --bg-alt:#F3F4F6 !important;
+  --text-main:#111827 !important; --text-muted:#626B78 !important;
+  --navy:#142B4A !important; --navy-hover:#203F68 !important;
+  --border:#D9DEE5 !important; --focus-ring:#315A86 !important;
+  --success:#1F2937 !important; --success-bg:#E9EDF2 !important;
+  --gold:#64748B !important; --radius:12px !important;
+  --shadow-soft:0 12px 32px rgba(20,43,74,.08) !important;
+}
+body{background:#fff!important;color:#111827!important}
+header{background:rgba(255,255,255,.96)!important;border-bottom:1px solid #D9DEE5!important}
+.logo,.nav-links a:hover,.nav-links a.active{color:#142B4A!important}
+.nav-links a{color:#596474!important}
+.btn-navy,.drawer-item .count,#toTop{background:#142B4A!important;border-color:#142B4A!important;color:#fff!important}
+.btn-navy:hover{background:#203F68!important;border-color:#203F68!important}
+.btn-outline{color:#142B4A!important;border-color:#B8C2CF!important}
+.btn-outline:hover{background:#EEF2F6!important;border-color:#142B4A!important}
+.hero{background:linear-gradient(115deg,#F0F2F5 0%,#FFFFFF 62%,#E9EDF2 100%)!important;border-color:#D9DEE5!important}
+.hero::before{background:rgba(20,43,74,.07)!important}
+.hero-tag,.level-badge{background:#E9EDF2!important;color:#142B4A!important;border-color:#D5DCE5!important}
+.hero h1,.cats h2,.catalog h2,.sec h2{color:#17263A!important}
+.hero h1 em{color:#244A75!important}
+.hero p,.trust,.nav-links a{color:#626B78!important}
+.trust span::before{background:#E9EDF2!important;color:#142B4A!important}
+.engagement-card,.cat,.ai-card,.ai-panel,.card,.product-card{background:#fff!important;border-color:#D9DEE5!important;box-shadow:0 10px 28px rgba(20,43,74,.06)!important}
+.progress-track{background:#E5E9EF!important}.progress-fill{background:#142B4A!important}
+.cat:hover{background:#F3F5F8!important;border-color:#AAB8C9!important}
+.cat b{color:#17263A!important}
+.a11y-bar{background:#F3F4F6!important;color:#626B78!important;border-color:#D9DEE5!important}
+.drawer-head{background:linear-gradient(135deg,#142B4A,#294C73)!important;color:#fff!important}
+.avatar{background:linear-gradient(135deg,#142B4A,#45678F)!important;color:#fff!important;border-color:#D9DEE5!important}
+.drawer-user{background:#fff!important;color:#111827!important;border-color:#D9DEE5!important}
+input,select,textarea{border-color:#D0D6DF!important;color:#111827!important;background:#fff!important}
+input:focus,select:focus,textarea:focus{outline-color:#315A86!important;border-color:#315A86!important}
+.ai-result{border-color:#D9DEE5!important;background:#fff!important}
+.ai-price{color:#142B4A!important}
+.ai-note{color:#626B78!important}
+footer{background:#F3F4F6!important;color:#4B5563!important;border-color:#D9DEE5!important}
+[data-theme="dark"]{--bg-main:#111827!important;--bg-alt:#1F2937!important;--text-main:#F3F4F6!important;--text-muted:#B7C0CC!important;--navy:#91A9C7!important;--navy-hover:#B4C5DA!important;--border:#374151!important}
+[data-theme="dark"] body,[data-theme="dark"] .engagement-card,[data-theme="dark"] .cat,[data-theme="dark"] .ai-result{background:#111827!important;color:#F3F4F6!important}
+[data-theme="dark"] header{background:rgba(17,24,39,.96)!important;border-color:#374151!important}
+[data-theme="dark"] .hero{background:linear-gradient(115deg,#172235,#111827 65%,#1F2937)!important}
+[data-theme="dark"] .hero h1,[data-theme="dark"] .cats h2,[data-theme="dark"] .catalog h2,[data-theme="dark"] .sec h2,[data-theme="dark"] .cat b{color:#F3F4F6!important}
+[data-theme="dark"] .hero p,[data-theme="dark"] .trust{color:#B7C0CC!important}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:#1F2937!important;color:#F3F4F6!important;border-color:#4B5563!important}
+</style>
+
+
+<style id="kova-centered-text">
+/* Alignement typographique : titres et textes de présentation centrés */
+.hero-grid{grid-template-columns:1fr!important;justify-items:center!important;text-align:center!important;gap:42px!important}
+.hero-grid>div:first-child,.hero-content{width:100%;max-width:820px;margin-inline:auto;text-align:center!important}
+.hero h1,.hero p,.hero-tag{margin-left:auto;margin-right:auto;text-align:center}
+.hero-buttons,.trust{justify-content:center!important}
+.cats h2,.catalog h2,.sec h2,.sec h3,.kova-growth h2,.kova-growth h3{text-align:center}
+.cats .container>p,.catalog .lead,.sec>.container>.lead,.kova-growth .lead{text-align:center;margin-left:auto;margin-right:auto}
+.toolbar-top{align-items:center!important;text-align:center!important}
+#catalogSub{margin-left:auto;margin-right:auto;text-align:center}
+.cat,.step,.plan-card{text-align:center}
+.cat{align-items:center}
+.step .n{margin-left:auto;margin-right:auto}
+.plan-grid{align-items:stretch}
+.plan-card ul{text-align:left;display:inline-block}
+.ai-head{justify-content:center;text-align:center}
+.ai-head>div{width:100%;text-align:center}
+.ai-panel>.ai-note,.ai-usage,.plan-status{text-align:center}
+.ai-result{text-align:left}
+.faq summary{text-align:center}
+.faq details>p{text-align:center}
+.cform{margin-left:auto;margin-right:auto}
+.cform label{text-align:left}
+.footer-row{text-align:center;justify-content:center}
+@media(max-width:900px){.hero-grid{justify-items:center!important;text-align:center!important}.hero p{margin-left:auto!important;margin-right:auto!important}.hero-buttons,.trust{justify-content:center!important}}
+@media(max-width:540px){.hero-grid{gap:28px!important}.hero h1,.hero p{text-align:center}.hero-buttons{justify-content:center!important}}
+</style>
+
+
+    <style>
+      /* Authentification simplifiée */
+      #authProfileFields[hidden] { display: none !important; }
+      #modalAuth .dialog-box { max-width: 440px; padding: 30px; }
+      #modalAuth .dialog-head { margin-bottom: 22px; }
+      #modalAuth .auth-mode-field select { font-weight: 600; }
+      #modalAuth .auth-help { color: var(--text-muted); font-size: .84rem; margin: -2px 0 12px; }
+      #modalAuth .auth-interests legend { font-weight: 700; font-size: .9rem; margin-bottom: 6px; }
+      #modalAuth .auth-switch-hint { margin-top: 14px; color: var(--text-muted); font-size: .8rem; text-align: center; }
+      #modalAuth .interest-check { background: var(--bg-alt); border-color: var(--border); }
+      #modalAuth .interest-check:has(input:checked) { border-color: var(--text-main); }
+      /* Menu latéral : hiérarchie nette, lignes sobres et état actif lisible */
+      #drawer { width: min(390px, 90vw); border-right: 1px solid var(--border); box-shadow: 18px 0 55px rgba(0,0,0,.16); }
+      .drawer-head { min-height: 82px; padding: 22px 24px; }
+      .drawer-head strong { letter-spacing: .14em; }
+      .drawer-close { width: 40px; height: 40px; display: grid; place-items: center; }
+      .drawer-user { margin: 18px 20px 8px; padding: 16px; gap: 12px; }
+      .drawer-user > span:nth-child(2) { min-width: 0; line-height: 1.45; }
+      .drawer-user small { display: inline-block; margin-top: 3px; color: var(--text-muted); }
+      .drawer-group { padding: 18px 18px 4px; }
+      .drawer-group h3 { font-size: .66rem; letter-spacing: .16em; margin-bottom: 8px; }
+      .drawer-item { min-height: 48px; gap: 13px; font-size: .9rem; letter-spacing: .01em; }
+      .drawer-item .ico { width: 34px; height: 34px; flex: 0 0 34px; font-size: .95rem; }
+      .drawer-item:hover, .drawer-item:focus-visible { background: var(--bg-alt); }
+      .drawer-foot { padding: 18px 22px 24px; line-height: 1.9; }
+      .menu-btn { width: 48px; height: 48px; border: 1px solid var(--border); }
+      .menu-btn:focus-visible, .drawer-close:focus-visible, .drawer-item:focus-visible { outline-offset: 3px; }
+      @media (max-width: 540px) {
+        #modalAuth .dialog-box { padding: 22px 18px; }
+        #drawer { width: min(360px, 92vw); }
+      }
+    </style>
+    <script>
+      (() => {
+        const mode = document.getElementById('authMode');
+        if (!mode) return;
+        const profile = document.getElementById('authProfileFields');
+        const name = document.getElementById('authName');
+        const password = document.getElementById('authPassword');
+        const submit = document.getElementById('authSubmit');
+        const hint = document.getElementById('authSwitchHint');
+        function syncAuthMode() {
+          const creating = mode.value === 'signup';
+          profile.hidden = !creating;
+          name.required = creating;
+          password.autocomplete = creating ? 'new-password' : 'current-password';
+          password.minLength = creating ? 8 : 1;
+          submit.textContent = creating ? 'Créer mon compte' : 'Me connecter';
+          hint.textContent = creating
+            ? 'Votre pseudo et vos préférences seront mémorisés pour les prochaines visites.'
+            : 'Votre profil et vos préférences seront récupérés automatiquement après connexion.';
+        }
+        mode.addEventListener('change', syncAuthMode);
+        syncAuthMode();
+
+        const avatar = document.getElementById('dAvatar');
+        const user = document.getElementById('dUser');
+        if (avatar && user) {
+          const refreshAvatar = () => {
+            const label = (user.textContent || 'V').trim();
+            avatar.textContent = label ? label.charAt(0).toUpperCase() : 'V';
+          };
+          refreshAvatar();
+          new MutationObserver(refreshAvatar).observe(user, { childList: true, characterData: true, subtree: true });
+        }
+      })();
+    </script>
+
+</body>
+</html>
