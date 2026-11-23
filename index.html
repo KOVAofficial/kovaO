@@ -1673,9 +1673,6 @@ footer a { color:#f8f7f1; }
                 <strong>KOVA.</strong> — Marketplace d'achat-revente entre particuliers.
                 <small style="display:block;color:var(--text-muted);margin-top:6px">Version de lancement : mise en relation uniquement, paiement intégré non activé.</small>
             </div>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <button type="button" class="btn btn-outline btn-sm" onclick="openModal('modalDb')">Configurer Base de données (Supabase)</button>
-            </div>
         </div>
     </footer>
 <div class="legal-bar"><span>© <span id="yr"></span> KOVA</span><button class="lk" data-legal="mentions">Mentions légales</button><button class="lk" data-legal="cgu">CGU</button><button class="lk" data-legal="privacy">Confidentialité</button><button class="lk" data-legal="cookies">Cookies</button></div>
@@ -1829,7 +1826,8 @@ footer a { color:#f8f7f1; }
         let listings = JSON.parse(localStorage.getItem('kova_listings')) || [];
         let favorites = JSON.parse(localStorage.getItem('kova_favorites')) || [];
         let messages = JSON.parse(localStorage.getItem('kova_messages')) || {};
-        let dbConfig = JSON.parse(localStorage.getItem('kova_db')) || { url: '', key: '' };
+        const KOVA_SUPABASE = { url: 'https://tupaegupivljdeipqzul.supabase.co', key: 'sb_publishable_Z52GyJQ8Vc5AYRfX7ZDJEQ_oic3ekvU' };
+        let dbConfig = { url: KOVA_SUPABASE.url, key: KOVA_SUPABASE.key };
         let supabaseClient = null;
         let supabaseSession = null;
 
@@ -2391,7 +2389,7 @@ footer a { color:#f8f7f1; }
         }
 
         function clearDbConfig() {
-            dbConfig = { url: '', key: '' };
+            dbConfig = { url: KOVA_SUPABASE.url, key: KOVA_SUPABASE.key };
             supabaseClient = null;
             supabaseSession = null;
             localStorage.removeItem('kova_db');
