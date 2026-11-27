@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://kovaofficial.github.io/kovaO/sitemap.xml
